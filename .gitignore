@@ -1,0 +1,28 @@
+*~
+__pycache__
+db.sqlite3
+target
+logs
+*.csv
+*.log
+*.retry
+airflow*
+unittests.cfg
+.DS_Store
+.vscode
+.R_History
+minikube
+*.db
+*.txt
+oenv
+*.ipynb_checkpoints
+*.aux
+*.bbl
+*.out
+<<<<<<< HEAD
+build
+=======
+build
+.eggs
+*.egg-info
+>>>>>>> 5e1bbe4... update gitignore, removed eggs

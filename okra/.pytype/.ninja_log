@@ -1,0 +1,12 @@
+# ninja log v5
+2	1413	1555690285176235402	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/error_handling.pyi	cd055953832ebdfe
+1	1772	1555690285481455431	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/models.pyi	d9eb3f06b55167b9
+2	2628	1555690286370505293	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/gcloud_utils.pyi	29f1dd11b86c4456
+4	2777	1555690286478203234	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/protobuf/assn1_pb2.pyi	e3e5d48653d05a8b
+1775	3134	1555690286899178618	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/assn4.pyi	5bfddfeef24c6d5c
+1413	3504	1555690287266224234	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/repo_mgmt.pyi	29ce227451a3b57b
+3504	5416	1555690289099152981	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/gitlogs.pyi	ea101f73d3ee623a
+5417	7151	1555690290887457781	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/github.pyi	cd1dd32dfc6ef3a8
+7151	8771	1555690292508487762	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/populate_db.pyi	c4b9770b9585a6e5
+8771	10641	1555690294348303413	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/playbooks.pyi	c38236b27bb7516a
+1	1680	1555690358850878809	/Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/be_nice.pyi	cd617f97b9c0a69f

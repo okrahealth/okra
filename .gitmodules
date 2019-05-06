@@ -1,0 +1,3 @@
+[submodule "tests/data/tbonza/tiny_dancer"]
+	path = tests/data/tbonza/tiny_dancer
+	url = https://github.com/tbonza/tiny_dancer.git

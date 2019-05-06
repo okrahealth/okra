@@ -1,0 +1,39 @@
+rule infer
+  command = pytype-single --imports_info $imports --module-name $module -V 3.6 -o $out --no-report-errors --nofail --quick $in
+  description = infer $module
+rule check
+  command = pytype-single --imports_info $imports --module-name $module -V 3.6 -o $out --analyze-annotated --nofail --quick $in
+  description = check $module
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/models.pyi: infer /Users/tylerbrown/projects/EDS19/okra/okra/models.py
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.models.imports
+  module = okra.models
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/assn4.pyi: infer /Users/tylerbrown/projects/EDS19/okra/okra/assn4.py | /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/models.pyi
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.assn4.imports
+  module = okra.assn4
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/gcloud_utils.pyi: infer /Users/tylerbrown/projects/EDS19/okra/okra/gcloud_utils.py
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.gcloud_utils.imports
+  module = okra.gcloud_utils
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/error_handling.pyi: infer /Users/tylerbrown/projects/EDS19/okra/okra/error_handling.py
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.error_handling.imports
+  module = okra.error_handling
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/repo_mgmt.pyi: infer /Users/tylerbrown/projects/EDS19/okra/okra/repo_mgmt.py | /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/error_handling.pyi
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.repo_mgmt.imports
+  module = okra.repo_mgmt
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/protobuf/assn1_pb2.pyi: infer /Users/tylerbrown/projects/EDS19/okra/okra/protobuf/assn1_pb2.py
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.protobuf.assn1_pb2.imports
+  module = okra.protobuf.assn1_pb2
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/gitlogs.pyi: infer /Users/tylerbrown/projects/EDS19/okra/okra/gitlogs.py | /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/repo_mgmt.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/protobuf/assn1_pb2.pyi
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.gitlogs.imports
+  module = okra.gitlogs
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/github.pyi: infer /Users/tylerbrown/projects/EDS19/okra/okra/github.py | /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/error_handling.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/models.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/gitlogs.pyi
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.github.imports
+  module = okra.github
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/populate_db.pyi: infer /Users/tylerbrown/projects/EDS19/okra/okra/populate_db.py | /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/models.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/github.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/gitlogs.pyi
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.populate_db.imports
+  module = okra.populate_db
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/playbooks.pyi: infer /Users/tylerbrown/projects/EDS19/okra/okra/playbooks.py | /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/assn4.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/error_handling.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/gcloud_utils.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/models.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/populate_db.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/repo_mgmt.pyi
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.playbooks.imports
+  module = okra.playbooks
+build /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/be_nice.pyi: check /Users/tylerbrown/projects/EDS19/okra/okra/be_nice.py | /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/repo_mgmt.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/populate_db.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/playbooks.pyi /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/pyi/okra/error_handling.pyi
+  imports = /Users/tylerbrown/projects/EDS19/okra/okra/.pytype/imports/okra.be_nice.imports
+  module = okra.be_nice

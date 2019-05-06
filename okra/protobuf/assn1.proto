@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package assn1;
+
+message Commit {
+  string hash_val = 1;
+  string author = 2;
+  string author_email = 3;
+  string author_timestamp = 4;
+  string committer = 5;
+  string committer_email = 6;
+  string committer_timestamp = 7;
+}
+
+message Message {
+  string hash_val = 1;
+  string subject = 2;
+  string message_body = 3;
+  string timestamp = 4;
+}
+
+message File {
+  string hash_val = 1;
+  string file_path = 2;
+  string added = 3;
+  string deleted = 4;
+}
+
+message Inventory {
+  string owner = 1;
+  string project = 2;
+  string last_hash = 3;
+}
