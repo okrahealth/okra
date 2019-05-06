@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>okra.playbooks &mdash; &#39;okra&#39; 1.0.18 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> 'okra'
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Developer Interface</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../apps.html">Applications</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">'okra'</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>okra.playbooks</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for okra.playbooks</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Playbooks for running full analyses &quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="k">import</span> <span class="n">urljoin</span>
+
+<span class="kn">from</span> <span class="nn">okra.assn4</span> <span class="k">import</span> <span class="n">get_truck_factor_by_project</span>
+<span class="kn">from</span> <span class="nn">okra.error_handling</span> <span class="k">import</span> <span class="p">(</span><span class="n">MissingEnvironmentVariableError</span><span class="p">,</span>
+                                 <span class="n">NetworkError</span><span class="p">,</span>
+                                 <span class="n">DirectoryNotCreatedError</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">okra.models</span> <span class="k">import</span> <span class="n">DataAccessLayer</span>
+<span class="kn">from</span> <span class="nn">okra.populate_db</span> <span class="k">import</span> <span class="n">populate_db</span>
+<span class="kn">from</span> <span class="nn">okra.repo_mgmt</span> <span class="k">import</span> <span class="p">(</span><span class="n">create_parent_dir</span><span class="p">,</span> <span class="n">clone_repo</span><span class="p">,</span> <span class="n">update_repo</span><span class="p">,</span>
+                            <span class="n">compress_repo</span><span class="p">,</span> <span class="n">decompress_repo</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="local_persistance"><a class="viewcode-back" href="../../api.html#okra.playbooks.local_persistance">[docs]</a><span class="k">def</span> <span class="nf">local_persistance</span><span class="p">(</span><span class="n">repo_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">parent_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">buffer_size</span><span class="o">=</span><span class="mi">4096</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Collect relevant data for locally cloned repos. </span>
+
+<span class="sd">    :param repo_name: name of git repository, &lt;linux&gt;</span>
+<span class="sd">    :param parent_dir: parent directory path, &lt;/home/user/code/&gt;</span>
+<span class="sd">    :param buffer_size: number of records processed before db commit</span>
+<span class="sd">    :return: populate sqlite database for a repo</span>
+<span class="sd">    :rtype: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;STARTED -- local persistance&quot;</span><span class="p">)</span>
+    <span class="n">repodb</span> <span class="o">=</span> <span class="s2">&quot;__REPODB__&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">repo_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span>
+    <span class="n">cache</span> <span class="o">=</span> <span class="n">parent_dir</span>
+
+    <span class="n">dburl</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///&quot;</span> <span class="o">+</span> <span class="n">cache</span> <span class="o">+</span> <span class="n">repodb</span> <span class="o">+</span> <span class="s2">&quot;.db&quot;</span>
+    <span class="n">populate_db</span><span class="p">(</span><span class="n">dburl</span><span class="p">,</span> <span class="n">cache</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">buffer_size</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;FINISHED -- local perisistance&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="simple_version_truck_factor"><a class="viewcode-back" href="../../api.html#okra.playbooks.simple_version_truck_factor">[docs]</a><span class="k">def</span> <span class="nf">simple_version_truck_factor</span><span class="p">(</span><span class="n">repos</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dburl</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span><span class="nb">int</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Simple version of the truck factor analysis.</span>
+
+<span class="sd">    This is a basic version of the truck factor which </span>
+<span class="sd">    does not attempt to run the analysis at scale. It&#39;s</span>
+<span class="sd">    just a proof of concept version. Writes out a csv file with</span>
+<span class="sd">    the truck factor of each repository. You can use this csv file</span>
+<span class="sd">    to do further analysis in R.</span>
+
+<span class="sd">    :param repos: repo queue with value format &#39;&lt;repo owner&gt;/&lt;repo name&gt;&#39;</span>
+<span class="sd">    :param dirpath: path to working directory to store git repos</span>
+<span class="sd">    :param dburl: database url (ex. &#39;sqlite:///:memory&#39;)</span>
+<span class="sd">    :param b: batch size (ex. 1024)</span>
+<span class="sd">    :return: outputs truck factor analysis as csv file </span>
+<span class="sd">    :rtype: None, writes out csv file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;STARTED -- simple-version truck factor&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Retrieve or update git repos</span>
+    
+    <span class="k">for</span> <span class="n">repo_name</span> <span class="ow">in</span> <span class="n">repos</span><span class="p">:</span>
+
+        <span class="n">rpath</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">)</span>
+        <span class="n">create_parent_dir</span><span class="p">(</span><span class="n">repo_name</span><span class="p">,</span> <span class="n">dirpath</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">rpath</span><span class="p">):</span>
+            <span class="n">update_repo</span><span class="p">(</span><span class="n">repo_name</span><span class="p">,</span> <span class="n">dirpath</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">clone_repo</span><span class="p">(</span><span class="n">repo_name</span><span class="p">,</span> <span class="n">dirpath</span><span class="p">)</span>
+
+    <span class="c1"># Populate database</span>
+
+    <span class="n">populate_db</span><span class="p">(</span><span class="n">dburl</span><span class="p">,</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">repos</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+    <span class="c1"># Compute truck factor for each project</span>
+
+    <span class="n">dal</span> <span class="o">=</span> <span class="n">DataAccessLayer</span><span class="p">(</span><span class="n">dburl</span><span class="p">)</span>
+    <span class="n">dal</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+    <span class="n">dal</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">dal</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">repo_name</span> <span class="ow">in</span> <span class="n">repos</span><span class="p">:</span>
+
+        <span class="n">owner</span><span class="p">,</span> <span class="n">project</span> <span class="o">=</span> <span class="n">repo_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+        <span class="n">truck_factor</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">get_truck_factor_by_project</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">dal</span><span class="p">)</span>
+
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">repo_name</span><span class="p">,</span> <span class="n">truck_factor</span><span class="p">))</span>
+
+    <span class="n">dal</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;COMPLETED -- simple-version truck factor&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+    
+
+<span class="k">def</span> <span class="nf">retrieve_or_clone</span><span class="p">(</span><span class="n">repo_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    
+    <span class="c1"># check s3 bucket for repo</span>
+    <span class="n">repopath</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">repopath</span><span class="p">):</span> <span class="c1"># may already exist</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">return</span> <span class="n">clone_repo</span><span class="p">(</span><span class="n">repo_name</span><span class="p">,</span> <span class="n">dirpath</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Tyler Brown
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

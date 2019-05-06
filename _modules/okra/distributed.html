@@ -1,0 +1,538 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>okra.distributed &mdash; &#39;okra&#39; 1.0.18 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> 'okra'
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Developer Interface</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../apps.html">Applications</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">'okra'</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>okra.distributed</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for okra.distributed</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Turns out that joins are less than ideal in Spark. </span>
+
+<span class="sd">Instead of using a central database, we&#39;ll solve the problem in a</span>
+<span class="sd">distributed way. Each function returns an immutable type. We&#39;ll just</span>
+<span class="sd">use one server with like 32 cores or whatever. Need to throw out the</span>
+<span class="sd">parquet files and use the SQLite databases.</span>
+
+<span class="sd">Reference:</span>
+<span class="sd">    tbonza/EDS19/project/PredictRepoHealth.ipynb</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="k">import</span> <span class="n">Pool</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">okra.models</span> <span class="k">import</span> <span class="n">Meta</span><span class="p">,</span> <span class="n">Author</span><span class="p">,</span> <span class="n">Contrib</span><span class="p">,</span> <span class="n">CommitFile</span><span class="p">,</span> <span class="n">Info</span>
+<span class="kn">from</span> <span class="nn">okra.models</span> <span class="k">import</span> <span class="n">DataAccessLayer</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="run_distributed_pool"><a class="viewcode-back" href="../../api.html#okra.distributed.run_distributed_pool">[docs]</a><span class="k">def</span> <span class="nf">run_distributed_pool</span><span class="p">(</span><span class="n">n_cores</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">work</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Run distributed pool across n_cores</span>
+
+<span class="sd">    :param n_cores: number of cores in available in server</span>
+<span class="sd">    :param func: immutable function to execute work</span>
+<span class="sd">    :param work: input for immutable function</span>
+<span class="sd">    :return: func output from work</span>
+<span class="sd">    :rtype: meta</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">n_cores</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">work</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="create_working_table"><a class="viewcode-back" href="../../api.html#okra.distributed.create_working_table">[docs]</a><span class="k">def</span> <span class="nf">create_working_table</span><span class="p">(</span><span class="n">dal</span><span class="p">:</span> <span class="n">DataAccessLayer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create a base table to derive all other features and aggregations</span>
+
+<span class="sd">    :param dal: okra.models.DataAccessLayer, session must be instantiated</span>
+<span class="sd">    :return: base table for analysis</span>
+<span class="sd">    :rtype: pd.DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dal</span><span class="o">.</span><span class="n">session</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Session must be instantiated&quot;</span><span class="p">)</span>
+
+    <span class="n">q</span> <span class="o">=</span> <span class="n">dal</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+        <span class="n">Meta</span><span class="o">.</span><span class="n">commit_hash</span><span class="p">,</span> <span class="n">Meta</span><span class="o">.</span><span class="n">owner_name</span><span class="p">,</span> <span class="n">Meta</span><span class="o">.</span><span class="n">project_name</span><span class="p">,</span>
+        <span class="n">CommitFile</span><span class="o">.</span><span class="n">file_id</span><span class="p">,</span> <span class="n">CommitFile</span><span class="o">.</span><span class="n">modified_file</span><span class="p">,</span>
+        <span class="n">CommitFile</span><span class="o">.</span><span class="n">lines_added</span><span class="p">,</span> <span class="n">CommitFile</span><span class="o">.</span><span class="n">lines_deleted</span><span class="p">,</span>
+        <span class="n">Author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">Author</span><span class="o">.</span><span class="n">email</span><span class="p">,</span> <span class="n">Author</span><span class="o">.</span><span class="n">authored</span><span class="p">)</span>\
+        <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">Author</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CommitFile</span><span class="p">)</span>
+
+    <span class="n">items</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">q</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;commit_hash&#39;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">commit_hash</span><span class="p">,</span>
+            <span class="s1">&#39;owner_name&#39;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">owner_name</span><span class="p">,</span>
+            <span class="s1">&#39;project_name&#39;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">project_name</span><span class="p">,</span>
+            <span class="s1">&#39;file_id&#39;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">file_id</span><span class="p">,</span>
+            <span class="s1">&#39;modified_file&#39;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">modified_file</span><span class="p">,</span>
+            <span class="s1">&#39;lines_added&#39;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">lines_added</span><span class="p">,</span>
+            <span class="s1">&#39;lines_deleted&#39;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">lines_deleted</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+            <span class="s1">&#39;authored&#39;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">authored</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;ts&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">authored</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="num_authors"><a class="viewcode-back" href="../../api.html#okra.distributed.num_authors">[docs]</a><span class="k">def</span> <span class="nf">num_authors</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">period</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Number of authors in a given time period. </span>
+
+<span class="sd">    :param df: pd.DataFrame, base table</span>
+<span class="sd">    :param period: str, &#39;Y&#39;, year</span>
+<span class="sd">    :return: df aggregated by period</span>
+<span class="sd">    :rtype: pd.DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">per</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">to_period</span><span class="p">(</span><span class="n">period</span><span class="p">)</span>
+    
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">]</span>
+    <span class="n">grp</span> <span class="o">=</span> <span class="p">[</span><span class="n">per</span><span class="p">,</span> <span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">grp</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;num_authors&#39;</span><span class="p">]</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="num_mentors"><a class="viewcode-back" href="../../api.html#okra.distributed.num_mentors">[docs]</a><span class="k">def</span> <span class="nf">num_mentors</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">period</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">subperiod</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span><span class="nb">int</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Number of authors in a larger time period who have also</span>
+<span class="sd">    made commits in k number of smaller time periods. </span>
+<span class="sd">    </span>
+<span class="sd">    For example, number of authors in a year who have also </span>
+<span class="sd">    committed changes in each month of that year.</span>
+
+<span class="sd">    :param df: pd.DataFrame, base table</span>
+<span class="sd">    :param period: &#39;Y&#39;, year</span>
+<span class="sd">    :param subperiod: &#39;M&#39;, month</span>
+<span class="sd">    :param k: int, authors exist at least k subperiods</span>
+<span class="sd">    :return: df aggregated by period</span>
+<span class="sd">    :rtype: pd.DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">subper</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">to_period</span><span class="p">(</span><span class="n">subperiod</span><span class="p">)</span>
+    <span class="n">subcols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">]</span>
+    <span class="n">subgrp</span> <span class="o">=</span> <span class="p">[</span><span class="n">subper</span><span class="p">,</span> <span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">]</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">subcols</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">subgrp</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+    <span class="n">ok</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">period</span> <span class="o">==</span> <span class="s1">&#39;Y&#39;</span><span class="p">:</span>
+
+        <span class="n">ok</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">]</span>
+        <span class="n">grp</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">,</span><span class="s1">&#39;owner_name&#39;</span><span class="p">,</span><span class="s1">&#39;project_name&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="n">ok</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">grp</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+
+        <span class="n">ok</span> <span class="o">=</span> <span class="n">ok</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="n">ok</span><span class="p">[[</span><span class="s1">&#39;year&#39;</span><span class="p">,</span> <span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">,</span> <span class="s1">&#39;email&#39;</span><span class="p">]]</span>
+        <span class="n">ok</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ts&#39;</span><span class="p">,</span> <span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">,</span> <span class="s1">&#39;mentor_count&#39;</span><span class="p">]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">ok</span><span class="p">[</span><span class="n">ok</span><span class="o">.</span><span class="n">mentor_count</span> <span class="o">&gt;=</span> <span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;ts&#39;</span><span class="p">,</span> <span class="s1">&#39;owner_name&#39;</span><span class="p">,</span>
+                                                   <span class="s1">&#39;project_name&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        
+        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Period &#39;</span><span class="si">{}</span><span class="s2">&#39; not found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">period</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="num_orgs"><a class="viewcode-back" href="../../api.html#okra.distributed.num_orgs">[docs]</a><span class="k">def</span> <span class="nf">num_orgs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">period</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Number of organizations commiting to a repo in a time period</span>
+
+<span class="sd">    Organizations are found by extracting the domain of email </span>
+<span class="sd">    addresses used by authors.</span>
+
+<span class="sd">    :param df: pd.DataFrame, base table</span>
+<span class="sd">    :param period: str, &#39;Y&#39; year time period</span>
+<span class="sd">    :return: df aggregated by period</span>
+<span class="sd">    :rtype: pd.DataFrame</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">email_suffix</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;com&#39;</span><span class="p">,</span><span class="s1">&#39;org&#39;</span><span class="p">,</span><span class="s1">&#39;ru&#39;</span><span class="p">,</span><span class="s1">&#39;edu&#39;</span><span class="p">,</span><span class="s1">&#39;dk&#39;</span><span class="p">,</span><span class="s1">&#39;id.au&#39;</span><span class="p">,</span><span class="s1">&#39;ac&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;de&#39;</span><span class="p">,</span><span class="s1">&#39;uk&#39;</span><span class="p">,</span><span class="s1">&#39;cz&#39;</span><span class="p">,</span><span class="s1">&#39;fr&#39;</span><span class="p">,</span><span class="s1">&#39;jp&#39;</span><span class="p">,</span><span class="s1">&#39;il&#39;</span><span class="p">,</span><span class="s1">&#39;me&#39;</span><span class="p">,</span><span class="s1">&#39;net&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;eu&#39;</span><span class="p">,</span> <span class="s1">&#39;pw&#39;</span><span class="p">,</span> <span class="s1">&#39;ch&#39;</span><span class="p">,</span><span class="s1">&#39;cn&#39;</span><span class="p">,</span><span class="s1">&#39;io&#39;</span><span class="p">,</span><span class="s1">&#39;nu&#39;</span><span class="p">,</span><span class="s1">&#39;it&#39;</span><span class="p">,</span><span class="s1">&#39;ai&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;fi&#39;</span><span class="p">,</span> <span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="s1">&#39;sk&#39;</span><span class="p">,</span> <span class="s1">&#39;ie&#39;</span><span class="p">,</span> <span class="s1">&#39;ca&#39;</span><span class="p">,</span> <span class="s1">&#39;at&#39;</span><span class="p">,</span> <span class="s1">&#39;pl&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;hu&#39;</span><span class="p">,</span> <span class="s1">&#39;nl&#39;</span><span class="p">,</span> <span class="s1">&#39;works&#39;</span><span class="p">,</span> <span class="s1">&#39;hr&#39;</span><span class="p">,</span> <span class="s1">&#39;se&#39;</span><span class="p">,</span><span class="s1">&#39;no&#39;</span><span class="p">,</span> <span class="s1">&#39;blue&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;(none)&#39;</span><span class="p">,</span> <span class="s1">&#39;lt&#39;</span><span class="p">,</span> <span class="s1">&#39;cc&#39;</span><span class="p">,</span> <span class="s1">&#39;si&#39;</span><span class="p">,</span> <span class="s1">&#39;la&#39;</span><span class="p">,</span> <span class="s1">&#39;us&#39;</span><span class="p">,</span> <span class="s1">&#39;gr&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;De&#39;</span><span class="p">,</span><span class="s1">&#39;br&#39;</span><span class="p">,</span> <span class="s1">&#39;ro&#39;</span><span class="p">,</span> <span class="s1">&#39;li&#39;</span><span class="p">,</span> <span class="s1">&#39;gov&#39;</span><span class="p">,</span> <span class="s1">&#39;pt&#39;</span><span class="p">,</span> <span class="s1">&#39;is&#39;</span><span class="p">,</span> <span class="s1">&#39;sg&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;vin&#39;</span><span class="p">,</span> <span class="s1">&#39;in&#39;</span><span class="p">,</span> <span class="s1">&#39;be&#39;</span><span class="p">,</span> <span class="s1">&#39;bzh&#39;</span><span class="p">,</span> <span class="s1">&#39;pm&#39;</span><span class="p">,</span> <span class="s1">&#39;xyz&#39;</span><span class="p">,</span> <span class="s1">&#39;fun&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;es&#39;</span><span class="p">,</span> <span class="s1">&#39;systems&#39;</span><span class="p">,</span> <span class="s1">&#39;cx&#39;</span><span class="p">,</span> <span class="s1">&#39;tw&#39;</span><span class="p">,</span><span class="s1">&#39;cl&#39;</span><span class="p">,</span> <span class="s1">&#39;lv&#39;</span><span class="p">,</span> <span class="s1">&#39;ne&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;co&#39;</span><span class="p">,</span> <span class="s1">&#39;st&#39;</span><span class="p">,</span> <span class="s1">&#39;ma&#39;</span><span class="p">,</span> <span class="s1">&#39;ws&#39;</span><span class="p">,</span> <span class="s1">&#39;su&#39;</span><span class="p">,</span> <span class="s1">&#39;ORG&#39;</span><span class="p">,</span> <span class="s1">&#39;tk&#39;</span><span class="p">,</span> <span class="s1">&#39;cu&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;COM&#39;</span><span class="p">,</span> <span class="s1">&#39;kr&#39;</span><span class="p">,</span> <span class="s1">&#39;vpc&#39;</span><span class="p">,</span> <span class="s1">&#39;ip&#39;</span><span class="p">,</span> <span class="s1">&#39;danix&#39;</span><span class="p">,</span> <span class="s1">&#39;Com&#39;</span><span class="p">,</span> <span class="s1">&#39;re&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;EDU&#39;</span><span class="p">]</span>
+
+    <span class="n">pattern</span> <span class="o">=</span> <span class="s1">&#39;[A-Za-z\-\._0-9\+]+@(.*)?.(</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">email_suffix</span><span class="p">))</span>
+    <span class="n">pat</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern</span><span class="p">)</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;org_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">email</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pat</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                                    <span class="k">if</span> <span class="n">pat</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">NaN</span><span class="p">)</span>
+    
+    <span class="n">per</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">to_period</span><span class="p">(</span><span class="n">period</span><span class="p">)</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">,</span> <span class="s1">&#39;org_name&#39;</span><span class="p">]</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">per</span><span class="p">,</span> <span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="create_features_target"><a class="viewcode-back" href="../../api.html#okra.distributed.create_features_target">[docs]</a><span class="k">def</span> <span class="nf">create_features_target</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Create dataset from train/test/val and Y &quot;&quot;&quot;</span>
+
+    <span class="c1">## Features</span>
+    
+    <span class="n">X_1</span> <span class="o">=</span> <span class="n">num_authors</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+    <span class="n">X_2</span> <span class="o">=</span> <span class="n">num_mentors</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+    <span class="n">X_3</span> <span class="o">=</span> <span class="n">num_orgs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+
+    <span class="n">X_13</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">X_1</span><span class="p">,</span> <span class="n">X_3</span><span class="p">)</span>
+    <span class="n">X_13</span><span class="o">.</span><span class="n">ts</span>  <span class="o">=</span> <span class="n">X_13</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">X_13</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">X_1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ts&#39;</span><span class="p">,</span><span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">,</span> <span class="s1">&#39;mentor_count&#39;</span><span class="p">]</span>
+    <span class="n">join_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ts&#39;</span><span class="p">,</span><span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">]</span>
+    <span class="n">df_features</span> <span class="o">=</span> <span class="n">X_13</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">X_2</span><span class="p">[</span><span class="n">cols</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="n">join_cols</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;X_2 head: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">X_2</span><span class="o">.</span><span class="n">head</span><span class="p">()))</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;df_features head: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df_features</span><span class="o">.</span><span class="n">head</span><span class="p">()))</span>
+
+    <span class="c1">## Target</span>
+
+    <span class="n">per</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">dt</span><span class="o">.</span><span class="n">to_period</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">,</span> <span class="s1">&#39;lines_added&#39;</span><span class="p">,</span> <span class="s1">&#39;lines_deleted&#39;</span><span class="p">]</span>
+    <span class="n">grp</span> <span class="o">=</span> <span class="p">[</span><span class="n">per</span><span class="p">,</span> <span class="s1">&#39;owner_name&#39;</span><span class="p">,</span> <span class="s1">&#39;project_name&#39;</span><span class="p">]</span>
+    <span class="n">df_target</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">grp</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="n">df_target</span><span class="p">[</span><span class="s1">&#39;velocity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_target</span><span class="o">.</span><span class="n">lines_added</span> <span class="o">-</span> \
+        <span class="n">df_target</span><span class="o">.</span><span class="n">lines_deleted</span>
+
+    <span class="c1">## Reset indices</span>
+    
+    <span class="n">df_features</span> <span class="o">=</span> <span class="n">df_features</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">df_target</span> <span class="o">=</span> <span class="n">df_target</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+
+    <span class="c1">## Recast pandas specific types</span>
+
+    <span class="n">df_target</span><span class="o">.</span><span class="n">ts</span> <span class="o">=</span> <span class="n">df_target</span><span class="o">.</span><span class="n">ts</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">year</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df_features</span><span class="p">,</span> <span class="n">df_target</span></div>
+
+<div class="viewcode-block" id="write_features_target"><a class="viewcode-back" href="../../api.html#okra.distributed.write_features_target">[docs]</a><span class="k">def</span> <span class="nf">write_features_target</span><span class="p">(</span><span class="n">dbinfo</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot; Write out features and target dataframes to parquet. </span>
+<span class="sd">    </span>
+<span class="sd">    :param dburl: SQLite database url</span>
+<span class="sd">    :return: write out feature, target dataframes as parquet</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dburl</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">cache</span> <span class="o">=</span> <span class="n">dbinfo</span>
+        
+        <span class="n">dal</span> <span class="o">=</span> <span class="n">DataAccessLayer</span><span class="p">(</span><span class="n">dburl</span><span class="p">)</span>
+        <span class="n">dal</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+        <span class="n">dal</span><span class="o">.</span><span class="n">session</span> <span class="o">=</span> <span class="n">dal</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">create_working_table</span><span class="p">(</span><span class="n">dal</span><span class="p">)</span>
+        <span class="n">df_features</span><span class="p">,</span> <span class="n">df_target</span> <span class="o">=</span> <span class="n">create_features_target</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+        
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;target dtypes: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df_target</span><span class="o">.</span><span class="n">dtypes</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;features dtypes: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df_features</span><span class="o">.</span><span class="n">dtypes</span><span class="p">))</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;target shape: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df_target</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;features shape: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">df_features</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+        <span class="n">feature_path</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">features_</span><span class="si">{}</span><span class="s2">.parquet&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">)</span>
+        <span class="n">target_path</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">target_</span><span class="si">{}</span><span class="s2">.parquet&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">)</span>
+
+        <span class="n">df_features</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">feature_path</span><span class="p">,</span> <span class="s1">&#39;pyarrow&#39;</span><span class="p">)</span>
+        <span class="n">df_target</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">target_path</span><span class="p">,</span> <span class="s1">&#39;pyarrow&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote features: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">feature_path</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Wrote target: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">target_path</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="getwork_dbinfo"><a class="viewcode-back" href="../../api.html#okra.distributed.getwork_dbinfo">[docs]</a><span class="k">def</span> <span class="nf">getwork_dbinfo</span><span class="p">(</span><span class="n">cache</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Defines work for immutable function, write_features_target </span>
+
+<span class="sd">    :param cache: str, full path to cache</span>
+<span class="sd">    :return: dbinfo, (dburl, repo_name, cache)</span>
+<span class="sd">    :rtype: list of tuples</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">work</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dbs</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">&quot;.db&quot;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">db</span> <span class="ow">in</span> <span class="n">dbs</span><span class="p">:</span>
+
+            <span class="n">dburl</span> <span class="o">=</span> <span class="s2">&quot;sqlite:///&quot;</span> <span class="o">+</span> <span class="n">cache</span> <span class="o">+</span> <span class="n">db</span>
+            <span class="n">repo_name</span> <span class="o">=</span> <span class="n">db</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;__REPODB__&quot;</span><span class="p">,</span> <span class="s2">&quot;__LOGDF__&quot;</span><span class="p">)</span>
+
+            <span class="n">dbinfo</span> <span class="o">=</span> <span class="p">(</span><span class="n">dburl</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+            <span class="n">work</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dbinfo</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">work</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="consolidate_features_target"><a class="viewcode-back" href="../../api.html#okra.distributed.consolidate_features_target">[docs]</a><span class="k">def</span> <span class="nf">consolidate_features_target</span><span class="p">(</span><span class="n">cache</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">repo_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">report</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Consolidates distributed computations in cache</span>
+
+<span class="sd">    We&#39;re going to have n feature tables, n target tables. We</span>
+<span class="sd">    need to consolidate them into one feature and one target</span>
+<span class="sd">    table. This is the &#39;reduce&#39; part of a &#39;map/reduce&#39; pattern. </span>
+<span class="sd">    To avoid confusion with Hadoop, let&#39;s call this a </span>
+<span class="sd">    &#39;hack/reduce&#39; pattern.</span>
+<span class="sd">    </span>
+<span class="sd">    :param cache: str, full path to cache</span>
+<span class="sd">    :return: X_features, X_target written to disk</span>
+<span class="sd">    :rtype: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">date_today</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>        
+    <span class="n">df_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">cache</span><span class="p">)</span> <span class="k">if</span> <span class="n">repo_id</span> <span class="ow">in</span> <span class="n">i</span><span class="p">]</span>
+
+    <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">df_names</span> <span class="k">if</span> <span class="s1">&#39;features_&#39;</span> <span class="ow">in</span> <span class="n">i</span><span class="p">]</span>
+    <span class="n">target_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">df_names</span> <span class="k">if</span> <span class="s1">&#39;target_&#39;</span> <span class="ow">in</span> <span class="n">i</span><span class="p">]</span>
+
+    <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">fcount</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">feature_name</span> <span class="ow">in</span> <span class="n">feature_names</span><span class="p">:</span>
+
+        <span class="n">fpath</span> <span class="o">=</span> <span class="n">cache</span> <span class="o">+</span> <span class="n">feature_name</span>
+        <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+            <span class="n">featdf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="s1">&#39;pyarrow&#39;</span><span class="p">)</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fdf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="s1">&#39;pyarrow&#39;</span><span class="p">)</span>
+            <span class="n">featdf</span> <span class="o">=</span> <span class="n">featdf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fdf</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">fcount</span> <span class="o">%</span> <span class="n">report</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processed </span><span class="si">{}</span><span class="s2"> feature dataframes&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fcount</span><span class="p">))</span>
+        <span class="n">fcount</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">feat_path</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">df_features_</span><span class="si">{}</span><span class="s1">.parquet&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">date_today</span><span class="p">)</span>
+    <span class="n">featdf</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">feat_path</span><span class="p">,</span> <span class="s1">&#39;pyarrow&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Wrote df_features, </span><span class="si">{}</span><span class="s1">, to </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span>\
+                <span class="nb">format</span><span class="p">(</span><span class="n">featdf</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="n">feat_path</span><span class="p">))</span>
+
+    <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">tcount</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">target_name</span> <span class="ow">in</span> <span class="n">target_names</span><span class="p">:</span>
+
+        <span class="n">fpath</span> <span class="o">=</span> <span class="n">cache</span> <span class="o">+</span> <span class="n">target_name</span>
+        <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+            <span class="n">targdf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="s1">&#39;pyarrow&#39;</span><span class="p">)</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tdf</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">fpath</span><span class="p">,</span> <span class="s1">&#39;pyarrow&#39;</span><span class="p">)</span>
+            <span class="n">targdf</span> <span class="o">=</span> <span class="n">targdf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tdf</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">tcount</span> <span class="o">%</span> <span class="n">report</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Processed </span><span class="si">{}</span><span class="s2"> target dataframes&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tcount</span><span class="p">))</span>
+        <span class="n">tcount</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">targ_path</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">df_target_</span><span class="si">{}</span><span class="s1">.parquet&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cache</span><span class="p">,</span> <span class="n">date_today</span><span class="p">)</span>
+    <span class="n">targdf</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">targ_path</span><span class="p">,</span> <span class="s1">&#39;pyarrow&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Wrote df_target, </span><span class="si">{}</span><span class="s1">, to </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span>\
+                <span class="nb">format</span><span class="p">(</span><span class="n">targdf</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">targ_path</span><span class="p">))</span></div>
+
+    
+    
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Tyler Brown
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

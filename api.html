@@ -1,0 +1,812 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Developer Interface &mdash; &#39;okra&#39; 1.0.18 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Applications" href="apps.html" />
+    <link rel="prev" title="Welcome to okra’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> 'okra'
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Developer Interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-okra.distributed">Parallel Computing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-okra.repo_mgmt">GitHub Repository Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-okra.gitlogs">Git Log Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-okra.models">Database Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#redis-finite-queue-management">Redis Finite Queue Management</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-okra.error_handling">Okra Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-okra.playbooks">Git Playbooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-okra.be_nice">Polite GitHub Repo Retrieval</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="apps.html">Applications</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">'okra'</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Developer Interface</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-okra">
+<span id="developer-interface"></span><span id="api"></span><h1>Developer Interface<a class="headerlink" href="#module-okra" title="Permalink to this headline">¶</a></h1>
+<p>This part of the documentation covers all the interfaces of Okra.</p>
+<div class="section" id="module-okra.distributed">
+<span id="parallel-computing"></span><h2>Parallel Computing<a class="headerlink" href="#module-okra.distributed" title="Permalink to this headline">¶</a></h2>
+<p>Turns out that joins are less than ideal in Spark.</p>
+<p>Instead of using a central database, we’ll solve the problem in a
+distributed way. Each function returns an immutable type. We’ll just
+use one server with like 32 cores or whatever. Need to throw out the
+parquet files and use the SQLite databases.</p>
+<dl class="simple">
+<dt>Reference:</dt><dd><p>tbonza/EDS19/project/PredictRepoHealth.ipynb</p>
+</dd>
+</dl>
+<dl class="function">
+<dt id="okra.distributed.consolidate_features_target">
+<code class="descclassname">okra.distributed.</code><code class="descname">consolidate_features_target</code><span class="sig-paren">(</span><em>cache: str</em>, <em>repo_id: str</em>, <em>report=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/distributed.html#consolidate_features_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.distributed.consolidate_features_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Consolidates distributed computations in cache</p>
+<p>We’re going to have n feature tables, n target tables. We
+need to consolidate them into one feature and one target
+table. This is the ‘reduce’ part of a ‘map/reduce’ pattern. 
+To avoid confusion with Hadoop, let’s call this a 
+‘hack/reduce’ pattern.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cache</strong> – str, full path to cache</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>X_features, X_target written to disk</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.distributed.create_features_target">
+<code class="descclassname">okra.distributed.</code><code class="descname">create_features_target</code><span class="sig-paren">(</span><em>df</em>, <em>k=6</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/distributed.html#create_features_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.distributed.create_features_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create dataset from train/test/val and Y</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.distributed.create_working_table">
+<code class="descclassname">okra.distributed.</code><code class="descname">create_working_table</code><span class="sig-paren">(</span><em>dal: okra.models.DataAccessLayer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/distributed.html#create_working_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.distributed.create_working_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a base table to derive all other features and aggregations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dal</strong> – okra.models.DataAccessLayer, session must be instantiated</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>base table for analysis</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.distributed.getwork_dbinfo">
+<code class="descclassname">okra.distributed.</code><code class="descname">getwork_dbinfo</code><span class="sig-paren">(</span><em>cache: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/distributed.html#getwork_dbinfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.distributed.getwork_dbinfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines work for immutable function, write_features_target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cache</strong> – str, full path to cache</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>dbinfo, (dburl, repo_name, cache)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list of tuples</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.distributed.num_authors">
+<code class="descclassname">okra.distributed.</code><code class="descname">num_authors</code><span class="sig-paren">(</span><em>df</em>, <em>period: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/distributed.html#num_authors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.distributed.num_authors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of authors in a given time period.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – pd.DataFrame, base table</p></li>
+<li><p><strong>period</strong> – str, ‘Y’, year</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>df aggregated by period</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.distributed.num_mentors">
+<code class="descclassname">okra.distributed.</code><code class="descname">num_mentors</code><span class="sig-paren">(</span><em>df</em>, <em>period: str</em>, <em>subperiod: str</em>, <em>k: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/distributed.html#num_mentors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.distributed.num_mentors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of authors in a larger time period who have also
+made commits in k number of smaller time periods.</p>
+<p>For example, number of authors in a year who have also 
+committed changes in each month of that year.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – pd.DataFrame, base table</p></li>
+<li><p><strong>period</strong> – ‘Y’, year</p></li>
+<li><p><strong>subperiod</strong> – ‘M’, month</p></li>
+<li><p><strong>k</strong> – int, authors exist at least k subperiods</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>df aggregated by period</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.distributed.num_orgs">
+<code class="descclassname">okra.distributed.</code><code class="descname">num_orgs</code><span class="sig-paren">(</span><em>df</em>, <em>period</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/distributed.html#num_orgs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.distributed.num_orgs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of organizations commiting to a repo in a time period</p>
+<p>Organizations are found by extracting the domain of email 
+addresses used by authors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> – pd.DataFrame, base table</p></li>
+<li><p><strong>period</strong> – str, ‘Y’ year time period</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>df aggregated by period</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pd.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.distributed.run_distributed_pool">
+<code class="descclassname">okra.distributed.</code><code class="descname">run_distributed_pool</code><span class="sig-paren">(</span><em>n_cores: int</em>, <em>func</em>, <em>work: list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/distributed.html#run_distributed_pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.distributed.run_distributed_pool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run distributed pool across n_cores</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_cores</strong> – number of cores in available in server</p></li>
+<li><p><strong>func</strong> – immutable function to execute work</p></li>
+<li><p><strong>work</strong> – input for immutable function</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>func output from work</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>meta</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.distributed.write_features_target">
+<code class="descclassname">okra.distributed.</code><code class="descname">write_features_target</code><span class="sig-paren">(</span><em>dbinfo: tuple</em>, <em>k=6</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/okra/distributed.html#write_features_target"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.distributed.write_features_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out features and target dataframes to parquet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dburl</strong> – SQLite database url</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>write out feature, target dataframes as parquet</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-okra.repo_mgmt">
+<span id="github-repository-management"></span><h2>GitHub Repository Management<a class="headerlink" href="#module-okra.repo_mgmt" title="Permalink to this headline">¶</a></h2>
+<p>GitHub Repo Managment</p>
+<p>Related to downloading and updating GitHub repos. See
+the ‘assn1’ script in bin/assn1 to handle get and update
+features.</p>
+<dl class="function">
+<dt id="okra.repo_mgmt.clone_repo">
+<code class="descclassname">okra.repo_mgmt.</code><code class="descname">clone_repo</code><span class="sig-paren">(</span><em>repo_name: str</em>, <em>dirpath: str</em>, <em>ssh=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/okra/repo_mgmt.html#clone_repo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.repo_mgmt.clone_repo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clone GitHub repo.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.repo_mgmt.compress_repo">
+<code class="descclassname">okra.repo_mgmt.</code><code class="descname">compress_repo</code><span class="sig-paren">(</span><em>repo_name: str</em>, <em>cache: str</em>, <em>repo_comp: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/okra/repo_mgmt.html#compress_repo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.repo_mgmt.compress_repo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compress repo for upload.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_name</strong> – git repo name with owner included; 
+tensorflow/tensorflow</p></li>
+<li><p><strong>dirpath</strong> – directory path to git repo</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>creates a compressed file of github repo</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>True if git repo successfully compressed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.repo_mgmt.create_parent_dir">
+<code class="descclassname">okra.repo_mgmt.</code><code class="descname">create_parent_dir</code><span class="sig-paren">(</span><em>repo_name: str</em>, <em>dirpath: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/okra/repo_mgmt.html#create_parent_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.repo_mgmt.create_parent_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create parent directory before cloning repo.</p>
+<p><a class="reference external" href="https://github.com/tbonza/EDS19/issues/8">https://github.com/tbonza/EDS19/issues/8</a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.repo_mgmt.decompress_repo">
+<code class="descclassname">okra.repo_mgmt.</code><code class="descname">decompress_repo</code><span class="sig-paren">(</span><em>repo_comp: str</em>, <em>cache</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/okra/repo_mgmt.html#decompress_repo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.repo_mgmt.decompress_repo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decompress repo to a directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_name</strong> – git repo name with owner included; 
+tensorflow/tensorflow</p></li>
+<li><p><strong>dirpath</strong> – directory path to place uncompressed 
+file with repo owner</p></li>
+<li><p><strong>filepath</strong> – path to file to be decompressed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Uncompresses file and writes 
+‘git_owner_name/git_repo_name’ to the 
+specified directory.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>boolean</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="#okra.error_handling.DirectoryNotCreatedError" title="okra.error_handling.DirectoryNotCreatedError"><code class="xref py py-class docutils literal notranslate"><span class="pre">okra.error_handling.DirectoryNotCreatedError</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.repo_mgmt.gcloud_clone_or_fetch_repo">
+<code class="descclassname">okra.repo_mgmt.</code><code class="descname">gcloud_clone_or_fetch_repo</code><span class="sig-paren">(</span><em>repo_name: str</em>, <em>ssh=False</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/okra/repo_mgmt.html#gcloud_clone_or_fetch_repo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.repo_mgmt.gcloud_clone_or_fetch_repo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clone or fetch updates from git repo</p>
+<p>GCloud operations only work on one repository at a time
+so we don’t have to use a parent directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_name</strong> – ‘&lt;repo owner&gt;/&lt;repo name&gt;’</p></li>
+<li><p><strong>repo_path</strong> – local path to the git repo</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>current git repo</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None, file written to disk</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.repo_mgmt.read_repos">
+<code class="descclassname">okra.repo_mgmt.</code><code class="descname">read_repos</code><span class="sig-paren">(</span><em>fpath: str</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="_modules/okra/repo_mgmt.html#read_repos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.repo_mgmt.read_repos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read list of repos from disk</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.repo_mgmt.update_repo">
+<code class="descclassname">okra.repo_mgmt.</code><code class="descname">update_repo</code><span class="sig-paren">(</span><em>repo_name: str</em>, <em>dirpath: str</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="_modules/okra/repo_mgmt.html#update_repo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.repo_mgmt.update_repo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update repo with new code.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-okra.gitlogs">
+<span id="git-log-management"></span><h2>Git Log Management<a class="headerlink" href="#module-okra.gitlogs" title="Permalink to this headline">¶</a></h2>
+<p>Handle the data requirements for Assignment 1</p>
+<dl class="simple">
+<dt>References:</dt><dd><p>Assignment 1: “<a class="reference external" href="http://janvitek.org/events/NEU/6050/a1.html">http://janvitek.org/events/NEU/6050/a1.html</a>”
+Git log formatting: “<a class="reference external" href="https://git-scm.com/docs/pretty-formats">https://git-scm.com/docs/pretty-formats</a>”</p>
+</dd>
+</dl>
+<dl class="function">
+<dt id="okra.gitlogs.extract_data_main">
+<code class="descclassname">okra.gitlogs.</code><code class="descname">extract_data_main</code><span class="sig-paren">(</span><em>fpath: str</em>, <em>dirpath: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/gitlogs.html#extract_data_main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.gitlogs.extract_data_main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract data as requested in Assignment 1.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.gitlogs.parse_commits">
+<code class="descclassname">okra.gitlogs.</code><code class="descname">parse_commits</code><span class="sig-paren">(</span><em>rpath: str</em>, <em>chash=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/gitlogs.html#parse_commits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.gitlogs.parse_commits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yields a protocol buffer of git commit information.</p>
+<p>commits.csv collects basic information about 
+commits and contains the following columns:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rpath</strong> – path to git repository</p></li>
+<li><p><strong>chash</strong> – optional param, retrieve all commits since commit hash</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="field-list simple">
+<dt class="field-odd">class</dt>
+<dd class="field-odd"><p>okra.protobuf.assn1_pb2.Commit</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>generator, protocol buffer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.gitlogs.parse_committed_files">
+<code class="descclassname">okra.gitlogs.</code><code class="descname">parse_committed_files</code><span class="sig-paren">(</span><em>rpath: str</em>, <em>chash=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/gitlogs.html#parse_committed_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.gitlogs.parse_committed_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse file format from git log tool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rpath</strong> – path to git repository</p></li>
+<li><p><strong>chash</strong> – optional param, retrieve all commits since commit hash</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="field-list simple">
+<dt class="field-odd">class</dt>
+<dd class="field-odd"><p>okra.protobuf.assn1_pb2.Message</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>generator, protocol buffer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.gitlogs.parse_inventory">
+<code class="descclassname">okra.gitlogs.</code><code class="descname">parse_inventory</code><span class="sig-paren">(</span><em>rpath: str</em>, <em>repo_name: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/gitlogs.html#parse_inventory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.gitlogs.parse_inventory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return inventory information for a git repo.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rpath</strong> – repository path</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>inventory message object</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>okra.protobuf.assn1_pb2.Inventory</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.gitlogs.parse_messages">
+<code class="descclassname">okra.gitlogs.</code><code class="descname">parse_messages</code><span class="sig-paren">(</span><em>rpath: str</em>, <em>chash=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/gitlogs.html#parse_messages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.gitlogs.parse_messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yields a protocol buffer of a git commit message.</p>
+<p>messages.csv collects commit messages and their 
+subject.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rpath</strong> – path to git repository</p></li>
+<li><p><strong>chash</strong> – optional param, retrieve all commits since commit hash</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="field-list simple">
+<dt class="field-odd">class</dt>
+<dd class="field-odd"><p>okra.protobuf.assn1_pb2.Message</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>generator, protocol buffer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.gitlogs.write_line_commits">
+<code class="descclassname">okra.gitlogs.</code><code class="descname">write_line_commits</code><span class="sig-paren">(</span><em>parsed_commits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/gitlogs.html#write_line_commits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.gitlogs.write_line_commits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a line for each git commit message.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.gitlogs.write_line_files">
+<code class="descclassname">okra.gitlogs.</code><code class="descname">write_line_files</code><span class="sig-paren">(</span><em>parsed_files</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/gitlogs.html#write_line_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.gitlogs.write_line_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a line for each git filepath message.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.gitlogs.write_line_messages">
+<code class="descclassname">okra.gitlogs.</code><code class="descname">write_line_messages</code><span class="sig-paren">(</span><em>parsed_messages</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/gitlogs.html#write_line_messages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.gitlogs.write_line_messages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a line for each git commit message.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-okra.models">
+<span id="database-models"></span><h2>Database Models<a class="headerlink" href="#module-okra.models" title="Permalink to this headline">¶</a></h2>
+<p>SQL Database Models</p>
+<p>This is the database schema used for accessing the SQL database.</p>
+<dl class="class">
+<dt id="okra.models.Author">
+<em class="property">class </em><code class="descclassname">okra.models.</code><code class="descname">Author</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/models.html#Author"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.models.Author" title="Permalink to this definition">¶</a></dt>
+<dd><p>Author email is false, not all authors require a github account,
+so an email is not going to be required.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="okra.models.CommitFile">
+<em class="property">class </em><code class="descclassname">okra.models.</code><code class="descname">CommitFile</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/models.html#CommitFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.models.CommitFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="okra.models.Contrib">
+<em class="property">class </em><code class="descclassname">okra.models.</code><code class="descname">Contrib</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/models.html#Contrib"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.models.Contrib" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="okra.models.Info">
+<em class="property">class </em><code class="descclassname">okra.models.</code><code class="descname">Info</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/models.html#Info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.models.Info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="okra.models.Inventory">
+<em class="property">class </em><code class="descclassname">okra.models.</code><code class="descname">Inventory</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/models.html#Inventory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.models.Inventory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="okra.models.Meta">
+<em class="property">class </em><code class="descclassname">okra.models.</code><code class="descname">Meta</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/models.html#Meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.models.Meta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="redis-finite-queue-management">
+<h2>Redis Finite Queue Management<a class="headerlink" href="#redis-finite-queue-management" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-okra.error_handling">
+<span id="okra-exceptions"></span><h2>Okra Exceptions<a class="headerlink" href="#module-okra.error_handling" title="Permalink to this headline">¶</a></h2>
+<p>Custom errors we can expect.</p>
+<dl class="simple">
+<dt>References:</dt><dd><p><a class="reference external" href="https://docs.python.org/3/tutorial/errors.html">https://docs.python.org/3/tutorial/errors.html</a></p>
+</dd>
+</dl>
+<dl class="exception">
+<dt id="okra.error_handling.DirectoryNotCreatedError">
+<em class="property">exception </em><code class="descclassname">okra.error_handling.</code><code class="descname">DirectoryNotCreatedError</code><span class="sig-paren">(</span><em>expression</em>, <em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/error_handling.html#DirectoryNotCreatedError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.error_handling.DirectoryNotCreatedError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception raised when directory unable to be created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expression</strong> – input expression in which error occurred</p></li>
+<li><p><strong>message</strong> – explanation of error</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="exception">
+<dt id="okra.error_handling.Error">
+<em class="property">exception </em><code class="descclassname">okra.error_handling.</code><code class="descname">Error</code><a class="reference internal" href="_modules/okra/error_handling.html#Error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.error_handling.Error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for exceptions in okra</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="okra.error_handling.MissingEnvironmentVariableError">
+<em class="property">exception </em><code class="descclassname">okra.error_handling.</code><code class="descname">MissingEnvironmentVariableError</code><span class="sig-paren">(</span><em>expression</em>, <em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/error_handling.html#MissingEnvironmentVariableError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.error_handling.MissingEnvironmentVariableError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception raised when mandatory enviroment variable is missing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expression</strong> – input expression in which error occurred</p></li>
+<li><p><strong>message</strong> – explanation of error</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="exception">
+<dt id="okra.error_handling.NetworkError">
+<em class="property">exception </em><code class="descclassname">okra.error_handling.</code><code class="descname">NetworkError</code><span class="sig-paren">(</span><em>expression</em>, <em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/error_handling.html#NetworkError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.error_handling.NetworkError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Exception raised for errors related to network requests</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expression</strong> – input expression in which the error occurred</p></li>
+<li><p><strong>message</strong> – explanation of error</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-okra.playbooks">
+<span id="git-playbooks"></span><h2>Git Playbooks<a class="headerlink" href="#module-okra.playbooks" title="Permalink to this headline">¶</a></h2>
+<p>Playbooks for running full analyses</p>
+<dl class="function">
+<dt id="okra.playbooks.local_persistance">
+<code class="descclassname">okra.playbooks.</code><code class="descname">local_persistance</code><span class="sig-paren">(</span><em>repo_name: str</em>, <em>parent_dir: str</em>, <em>buffer_size=4096</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/playbooks.html#local_persistance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.playbooks.local_persistance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect relevant data for locally cloned repos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repo_name</strong> – name of git repository, &lt;linux&gt;</p></li>
+<li><p><strong>parent_dir</strong> – parent directory path, &lt;/home/user/code/&gt;</p></li>
+<li><p><strong>buffer_size</strong> – number of records processed before db commit</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>populate sqlite database for a repo</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.playbooks.simple_version_truck_factor">
+<code class="descclassname">okra.playbooks.</code><code class="descname">simple_version_truck_factor</code><span class="sig-paren">(</span><em>repos: list</em>, <em>dirpath: str</em>, <em>dburl: str</em>, <em>b: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/playbooks.html#simple_version_truck_factor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.playbooks.simple_version_truck_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple version of the truck factor analysis.</p>
+<p>This is a basic version of the truck factor which 
+does not attempt to run the analysis at scale. It’s
+just a proof of concept version. Writes out a csv file with
+the truck factor of each repository. You can use this csv file
+to do further analysis in R.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>repos</strong> – repo queue with value format ‘&lt;repo owner&gt;/&lt;repo name&gt;’</p></li>
+<li><p><strong>dirpath</strong> – path to working directory to store git repos</p></li>
+<li><p><strong>dburl</strong> – database url (ex. ‘sqlite:///:memory’)</p></li>
+<li><p><strong>b</strong> – batch size (ex. 1024)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>outputs truck factor analysis as csv file</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>None, writes out csv file</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-okra.be_nice">
+<span id="polite-github-repo-retrieval"></span><h2>Polite GitHub Repo Retrieval<a class="headerlink" href="#module-okra.be_nice" title="Permalink to this headline">¶</a></h2>
+<p>A nice approach to to downloading GitHub repos.</p>
+<p>Previous approaches to downloading GitHub repositories
+were set up in parallel on Kubernetes using Redis. This
+approach was considered too aggressive by both GitHub and
+Google. This approach is meant to be nice.</p>
+<dl class="function">
+<dt id="okra.be_nice.okay_benice">
+<code class="descclassname">okra.be_nice.</code><code class="descname">okay_benice</code><span class="sig-paren">(</span><em>qpath: str</em>, <em>ssh=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/be_nice.html#okay_benice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.be_nice.okay_benice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Polite GitHub repo retrieval</p>
+<p>Includes option to clone repo using SSH. This is recommended
+if you’re requesting a large number of repositories (&gt; 1000).
+Creates and populates SQLite database with pre-specified git
+log info. QPath is a text file from GitTorrent, queried using
+Google BigQuery.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qpath</strong> – path to queue of repository names.</p></li>
+<li><p><strong>ssh</strong> – bool, default is True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>writes SQLite database with parsed git log info to disk</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>none</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="apps.html" class="btn btn-neutral float-right" title="Applications" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to okra’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Tyler Brown
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,477 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>okra.gitlogs &mdash; &#39;okra&#39; 1.0.18 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> 'okra'
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Developer Interface</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../apps.html">Applications</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">'okra'</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>okra.gitlogs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for okra.gitlogs</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Handle the data requirements for Assignment 1 </span>
+
+<span class="sd">References:</span>
+<span class="sd">   Assignment 1: &quot;http://janvitek.org/events/NEU/6050/a1.html&quot;</span>
+<span class="sd">   Git log formatting: &quot;https://git-scm.com/docs/pretty-formats&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="kn">from</span> <span class="nn">okra.repo_mgmt</span> <span class="k">import</span> <span class="n">read_repos</span>
+<span class="kn">from</span> <span class="nn">okra.protobuf.assn1_pb2</span> <span class="k">import</span> <span class="n">Commit</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">File</span><span class="p">,</span> <span class="n">Inventory</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<div class="viewcode-block" id="parse_inventory"><a class="viewcode-back" href="../../api.html#okra.gitlogs.parse_inventory">[docs]</a><span class="k">def</span> <span class="nf">parse_inventory</span><span class="p">(</span><span class="n">rpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Return inventory information for a git repo.</span>
+
+<span class="sd">    :param rpath: repository path</span>
+<span class="sd">    :return: inventory message object</span>
+<span class="sd">    :rtype: okra.protobuf.assn1_pb2.Inventory</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">owner</span><span class="p">,</span> <span class="n">project</span> <span class="o">=</span> <span class="n">repo_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+
+    <span class="n">c</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span> <span class="s2">&quot;-1&quot;</span><span class="p">,</span> <span class="s2">&quot;--pretty=%H&quot;</span><span class="p">]</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">rpath</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;SUCCESS - extracted inventory info&quot;</span><span class="p">)</span>
+        <span class="n">hash_val</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="s1">&#39;ignore&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="n">inv</span> <span class="o">=</span> <span class="n">Inventory</span><span class="p">()</span>
+        <span class="n">inv</span><span class="o">.</span><span class="n">owner</span> <span class="o">=</span> <span class="n">owner</span>
+        <span class="n">inv</span><span class="o">.</span><span class="n">project</span> <span class="o">=</span> <span class="n">project</span>
+        <span class="n">inv</span><span class="o">.</span><span class="n">last_hash</span> <span class="o">=</span> <span class="n">hash_val</span>
+        <span class="k">return</span> <span class="n">inv</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;FAIL - </span><span class="si">{}</span><span class="s2">, </span><span class="si">{}</span><span class="s2">, inventory not extracted&quot;</span><span class="o">.</span>\
+                     <span class="nb">format</span><span class="p">(</span><span class="n">repo_name</span><span class="p">,</span> <span class="n">rpath</span><span class="p">))</span></div>
+    
+
+
+<div class="viewcode-block" id="parse_commits"><a class="viewcode-back" href="../../api.html#okra.gitlogs.parse_commits">[docs]</a><span class="k">def</span> <span class="nf">parse_commits</span><span class="p">(</span><span class="n">rpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">chash</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Yields a protocol buffer of git commit information.</span>
+
+<span class="sd">    commits.csv collects basic information about </span>
+<span class="sd">    commits and contains the following columns:</span>
+
+<span class="sd">    :param rpath: path to git repository</span>
+<span class="sd">    :param chash: optional param, retrieve all commits since commit hash</span>
+<span class="sd">    :return: :class: okra.protobuf.assn1_pb2.Commit</span>
+<span class="sd">    :rtype: generator, protocol buffer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chash</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;--pretty=%H^|^</span><span class="si">%a</span><span class="s2">n^|^</span><span class="si">%a</span><span class="s2">e^|^</span><span class="si">%a</span><span class="s2">I^|^</span><span class="si">%c</span><span class="s2">n^|^</span><span class="si">%c</span><span class="s2">e^|^</span><span class="si">%c</span><span class="s2">I&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;--pretty=%H^|^</span><span class="si">%a</span><span class="s2">n^|^</span><span class="si">%a</span><span class="s2">e^|^</span><span class="si">%a</span><span class="s2">I^|^</span><span class="si">%c</span><span class="s2">n^|^</span><span class="si">%c</span><span class="s2">e^|^</span><span class="si">%c</span><span class="s2">I&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">..HEAD&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chash</span><span class="p">)]</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">rpath</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;SUCCESS -- extracted git commit info&quot;</span><span class="p">)</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">row_num</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+
+            <span class="n">items</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="s1">&#39;ignore&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;^|^&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">7</span><span class="p">:</span>
+                <span class="n">commit</span> <span class="o">=</span> <span class="n">Commit</span><span class="p">()</span>
+
+                <span class="n">commit</span><span class="o">.</span><span class="n">hash_val</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">commit</span><span class="o">.</span><span class="n">author</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">commit</span><span class="o">.</span><span class="n">author_email</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">commit</span><span class="o">.</span><span class="n">author_timestamp</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="n">commit</span><span class="o">.</span><span class="n">committer</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+                <span class="n">commit</span><span class="o">.</span><span class="n">committer_email</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+                <span class="n">commit</span><span class="o">.</span><span class="n">committer_timestamp</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+                
+                <span class="k">yield</span> <span class="n">commit</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Issue with row </span><span class="si">{}</span><span class="s2">, repo &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span>\
+                             <span class="nb">format</span><span class="p">(</span><span class="n">row_num</span><span class="p">,</span> <span class="n">rpath</span><span class="p">))</span>            
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;FAIL -- unable to extract git commits info&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="write_line_commits"><a class="viewcode-back" href="../../api.html#okra.gitlogs.write_line_commits">[docs]</a><span class="k">def</span> <span class="nf">write_line_commits</span><span class="p">(</span><span class="n">parsed_commits</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Generate a line for each git commit message. &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">commit</span> <span class="ow">in</span> <span class="n">parsed_commits</span><span class="p">:</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">commit</span><span class="o">.</span><span class="n">hash_val</span><span class="p">,</span>
+            <span class="n">commit</span><span class="o">.</span><span class="n">author</span><span class="p">,</span>
+            <span class="n">commit</span><span class="o">.</span><span class="n">author_email</span><span class="p">,</span>
+            <span class="n">commit</span><span class="o">.</span><span class="n">author_timestamp</span><span class="p">,</span>
+            <span class="n">commit</span><span class="o">.</span><span class="n">committer</span><span class="p">,</span>
+            <span class="n">commit</span><span class="o">.</span><span class="n">committer_email</span><span class="p">,</span>
+            <span class="n">commit</span><span class="o">.</span><span class="n">committer_timestamp</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">yield</span> <span class="n">row</span></div>
+
+<div class="viewcode-block" id="parse_messages"><a class="viewcode-back" href="../../api.html#okra.gitlogs.parse_messages">[docs]</a><span class="k">def</span> <span class="nf">parse_messages</span><span class="p">(</span><span class="n">rpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">chash</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Yields a protocol buffer of a git commit message.</span>
+<span class="sd">    </span>
+<span class="sd">    messages.csv collects commit messages and their </span>
+<span class="sd">    subject.</span>
+
+<span class="sd">    :param rpath: path to git repository</span>
+<span class="sd">    :param chash: optional param, retrieve all commits since commit hash</span>
+<span class="sd">    :return: :class: okra.protobuf.assn1_pb2.Message</span>
+<span class="sd">    :rtype: generator, protocol buffer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chash</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;--pretty=^^!^^%H^|^</span><span class="si">%s</span><span class="s2">^|^%b^|^</span><span class="si">%a</span><span class="s2">I&quot;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;--pretty=^^!^^%H^|^</span><span class="si">%s</span><span class="s2">^|^%b^|^</span><span class="si">%a</span><span class="s2">I&quot;</span><span class="p">,</span>
+              <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">..HEAD&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chash</span><span class="p">)]</span>
+        
+    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">rpath</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;SUCCESS -- extracted messages_csv info&quot;</span><span class="p">)</span>
+
+        <span class="n">rows</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="s1">&#39;ignore&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;^^!^^&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">row_num</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+
+            <span class="n">items</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;^|^&quot;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+
+                <span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">()</span>
+
+                <span class="n">message</span><span class="o">.</span><span class="n">hash_val</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">message</span><span class="o">.</span><span class="n">subject</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">message</span><span class="o">.</span><span class="n">message_body</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">message</span><span class="o">.</span><span class="n">timestamp</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+                <span class="k">yield</span> <span class="n">message</span>
+                
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Issue with row </span><span class="si">{}</span><span class="s2">, repo &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span>\
+                             <span class="nb">format</span><span class="p">(</span><span class="n">row_num</span><span class="p">,</span> <span class="n">rpath</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;FAIL -- unable to extract messages_csv&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="write_line_messages"><a class="viewcode-back" href="../../api.html#okra.gitlogs.write_line_messages">[docs]</a><span class="k">def</span> <span class="nf">write_line_messages</span><span class="p">(</span><span class="n">parsed_messages</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Generate a line for each git commit message. &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">parsed_messages</span><span class="p">:</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">message</span><span class="o">.</span><span class="n">hash_val</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">.</span><span class="n">subject</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">.</span><span class="n">message_body</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">yield</span> <span class="n">row</span></div>
+
+<div class="viewcode-block" id="parse_committed_files"><a class="viewcode-back" href="../../api.html#okra.gitlogs.parse_committed_files">[docs]</a><span class="k">def</span> <span class="nf">parse_committed_files</span><span class="p">(</span><span class="n">rpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">chash</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Parse file format from git log tool. </span>
+
+<span class="sd">    :param rpath: path to git repository</span>
+<span class="sd">    :param chash: optional param, retrieve all commits since commit hash</span>
+<span class="sd">    :return: :class: okra.protobuf.assn1_pb2.Message</span>
+<span class="sd">    :rtype: generator, protocol buffer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chash</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span>
+              <span class="s1">&#39;--pretty=^|^%n%H&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;--numstat&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;log&quot;</span><span class="p">,</span>
+              <span class="s1">&#39;--pretty=^|^%n%H&#39;</span><span class="p">,</span>
+              <span class="s1">&#39;--numstat&#39;</span><span class="p">,</span>
+              <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">..HEAD&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chash</span><span class="p">)]</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">rpath</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unable find file info: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rpath</span><span class="p">))</span>        
+    
+    <span class="n">items</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;^|^&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">row_num</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">items</span><span class="p">):</span>
+
+        <span class="n">grp</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">grp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="n">commit_hash</span> <span class="o">=</span> <span class="n">grp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">file_item</span> <span class="ow">in</span> <span class="n">grp</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">props</span> <span class="o">=</span> <span class="n">file_item</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">props</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">finfo</span> <span class="o">=</span> <span class="n">File</span><span class="p">()</span>
+                <span class="n">finfo</span><span class="o">.</span><span class="n">hash_val</span> <span class="o">=</span> <span class="n">commit_hash</span>
+                <span class="n">finfo</span><span class="o">.</span><span class="n">added</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">finfo</span><span class="o">.</span><span class="n">deleted</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">finfo</span><span class="o">.</span><span class="n">file_path</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+                <span class="k">yield</span> <span class="n">finfo</span></div>
+
+<div class="viewcode-block" id="write_line_files"><a class="viewcode-back" href="../../api.html#okra.gitlogs.write_line_files">[docs]</a><span class="k">def</span> <span class="nf">write_line_files</span><span class="p">(</span><span class="n">parsed_files</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Generate a line for each git filepath message. &quot;&quot;&quot;</span>
+
+    <span class="k">for</span> <span class="n">file_item</span> <span class="ow">in</span> <span class="n">parsed_files</span><span class="p">:</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">file_item</span><span class="o">.</span><span class="n">hash_val</span><span class="p">,</span>
+            <span class="n">file_item</span><span class="o">.</span><span class="n">file_path</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">yield</span> <span class="n">row</span></div>
+
+<div class="viewcode-block" id="extract_data_main"><a class="viewcode-back" href="../../api.html#okra.gitlogs.extract_data_main">[docs]</a><span class="k">def</span> <span class="nf">extract_data_main</span><span class="p">(</span><span class="n">fpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Extract data as requested in Assignment 1. &quot;&quot;&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;STARTED data extraction&quot;</span><span class="p">)</span>
+    
+    <span class="n">commits</span> <span class="o">=</span> <span class="s2">&quot;commits.csv&quot;</span>
+    <span class="n">messages</span> <span class="o">=</span> <span class="s2">&quot;messages.csv&quot;</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="s2">&quot;files.csv&quot;</span>
+    
+    <span class="n">outfiles</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;parse&quot;</span>     <span class="p">:</span> <span class="n">parse_commits</span><span class="p">,</span>
+                 <span class="s2">&quot;line&quot;</span>      <span class="p">:</span> <span class="n">write_line_commits</span><span class="p">,</span>
+                 <span class="s2">&quot;file_name&quot;</span> <span class="p">:</span> <span class="n">commits</span><span class="p">},</span>
+                <span class="p">{</span><span class="s2">&quot;parse&quot;</span>     <span class="p">:</span> <span class="n">parse_messages</span><span class="p">,</span>
+                 <span class="s2">&quot;line&quot;</span>      <span class="p">:</span> <span class="n">write_line_messages</span><span class="p">,</span>
+                 <span class="s2">&quot;file_name&quot;</span> <span class="p">:</span> <span class="n">messages</span><span class="p">},</span>
+                <span class="p">{</span><span class="s2">&quot;parse&quot;</span>     <span class="p">:</span> <span class="n">parse_files</span><span class="p">,</span>
+                 <span class="s2">&quot;line&quot;</span>      <span class="p">:</span> <span class="n">write_line_files</span><span class="p">,</span>
+                 <span class="s2">&quot;file_name&quot;</span> <span class="p">:</span> <span class="n">files</span><span class="p">}]</span>
+
+    <span class="n">repos</span> <span class="o">=</span> <span class="n">read_repos</span><span class="p">(</span><span class="n">fpath</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Extracting data for </span><span class="si">{}</span><span class="s2"> git repos&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">repos</span><span class="p">)))</span>
+
+    <span class="n">outs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">commits</span> <span class="p">:</span> <span class="nb">open</span><span class="p">(</span><span class="n">dirpath</span> <span class="o">+</span> <span class="n">commits</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span>
+        <span class="n">messages</span><span class="p">:</span> <span class="nb">open</span><span class="p">(</span><span class="n">dirpath</span> <span class="o">+</span> <span class="n">messages</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span>
+        <span class="n">files</span><span class="p">:</span> <span class="nb">open</span><span class="p">(</span><span class="n">dirpath</span> <span class="o">+</span> <span class="n">files</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="n">repo_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">repo_name</span> <span class="ow">in</span> <span class="n">repos</span><span class="p">:</span>
+
+        <span class="n">rpath</span> <span class="o">=</span> <span class="n">dirpath</span> <span class="o">+</span> <span class="n">repo_name</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Extracting data in repo &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rpath</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">out_item</span> <span class="ow">in</span> <span class="n">outfiles</span><span class="p">:</span>
+
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">out_item</span><span class="p">[</span><span class="s2">&quot;line&quot;</span><span class="p">](</span><span class="n">out_item</span><span class="p">[</span><span class="s2">&quot;parse&quot;</span><span class="p">](</span><span class="n">rpath</span><span class="p">))</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Adding to file &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">out_item</span><span class="p">[</span><span class="s2">&quot;file_name&quot;</span><span class="p">]))</span>
+
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">outs</span><span class="p">[</span><span class="n">out_item</span><span class="p">[</span><span class="s2">&quot;file_name&quot;</span><span class="p">]],</span>
+                                <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span>
+                                <span class="n">quotechar</span><span class="o">=</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span>
+                                <span class="n">quoting</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">QUOTE_MINIMAL</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+
+                <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">outs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+
+        <span class="n">outs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Closed files&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;FINISHED data extraction&quot;</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Tyler Brown
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

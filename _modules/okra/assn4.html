@@ -1,0 +1,333 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>okra.assn4 &mdash; &#39;okra&#39; 1.0.18 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> 'okra'
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Developer Interface</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../apps.html">Applications</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">'okra'</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>okra.assn4</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for okra.assn4</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Compute Truck Factor</span>
+
+<span class="sd">The truck factor assignment includes several factors. We&#39;re just</span>
+<span class="sd">going to focus on the actual truck factor computation from a database</span>
+<span class="sd">in this file.</span>
+
+<span class="sd">References:</span>
+<span class="sd">  Assignment: http://janvitek.org/events/NEU/6050/a4.html</span>
+<span class="sd">  Paper: http://janvitek.org/events/NEU/6050/Ps/truck.pdf</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">defaultdict</span>
+
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">func</span>
+<span class="kn">from</span> <span class="nn">okra.models</span> <span class="k">import</span> <span class="p">(</span><span class="n">Meta</span><span class="p">,</span> <span class="n">Author</span><span class="p">,</span> <span class="n">Contrib</span><span class="p">,</span> <span class="n">CommitFile</span><span class="p">,</span> <span class="n">Info</span><span class="p">)</span>
+
+<div class="viewcode-block" id="total_number_of_files_by_project"><a class="viewcode-back" href="../../apps.html#okra.assn4.total_number_of_files_by_project">[docs]</a><span class="k">def</span> <span class="nf">total_number_of_files_by_project</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">dal</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Compute the total number of files by project. </span>
+<span class="sd">    </span>
+<span class="sd">    :param owner: name of owner</span>
+<span class="sd">    :param project: name of project</span>
+<span class="sd">    :param dal: okra.models.DataAccessLayer</span>
+<span class="sd">    :return: the number of files in a project</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">dal</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+        <span class="n">Meta</span><span class="o">.</span><span class="n">owner_name</span><span class="p">,</span> <span class="n">Meta</span><span class="o">.</span><span class="n">project_name</span><span class="p">,</span> <span class="n">CommitFile</span><span class="o">.</span><span class="n">modified_file</span>
+    <span class="p">)</span><span class="o">.</span>\
+    <span class="n">join</span><span class="p">(</span><span class="n">CommitFile</span><span class="p">)</span><span class="o">.</span>\
+    <span class="nb">filter</span><span class="p">(</span>
+        <span class="n">Meta</span><span class="o">.</span><span class="n">owner_name</span> <span class="o">==</span> <span class="n">owner</span><span class="p">,</span> <span class="n">Meta</span><span class="o">.</span><span class="n">project_name</span> <span class="o">==</span> <span class="n">project</span>
+    <span class="p">)</span><span class="o">.</span>\
+    <span class="n">group_by</span><span class="p">(</span><span class="n">CommitFile</span><span class="o">.</span><span class="n">modified_file</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="author_file_owned"><a class="viewcode-back" href="../../apps.html#okra.assn4.author_file_owned">[docs]</a><span class="k">def</span> <span class="nf">author_file_owned</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">dal</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Compute file ownership by each author. </span>
+
+<span class="sd">    :param owner: name of owner</span>
+<span class="sd">    :param project: name of project    </span>
+<span class="sd">    :param dal: okra.models.DataAccessLayer</span>
+<span class="sd">    :return: list of file owners based on max number of lines written</span>
+<span class="sd">    :rtype: list of sqlalchemy objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Number of lines added by each author per file</span>
+    
+    <span class="n">q</span> <span class="o">=</span> <span class="n">dal</span><span class="o">.</span><span class="n">session</span><span class="o">.</span>\
+        <span class="n">query</span><span class="p">(</span>
+            <span class="n">Meta</span><span class="o">.</span><span class="n">owner_name</span><span class="p">,</span> <span class="n">Meta</span><span class="o">.</span><span class="n">project_name</span><span class="p">,</span> <span class="n">Meta</span><span class="o">.</span><span class="n">commit_hash</span><span class="p">,</span>
+            <span class="n">Author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">Author</span><span class="o">.</span><span class="n">email</span><span class="p">,</span> <span class="n">CommitFile</span><span class="o">.</span><span class="n">modified_file</span><span class="p">,</span>
+            <span class="n">func</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">CommitFile</span><span class="o">.</span><span class="n">lines_added</span><span class="p">)</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="s2">&quot;total_lines_added&quot;</span><span class="p">)</span>
+        <span class="p">)</span><span class="o">.</span>\
+        <span class="nb">filter</span><span class="p">(</span><span class="n">Meta</span><span class="o">.</span><span class="n">owner_name</span> <span class="o">==</span> <span class="n">owner</span><span class="p">,</span> <span class="n">Meta</span><span class="o">.</span><span class="n">project_name</span> <span class="o">==</span> <span class="n">project</span><span class="p">)</span><span class="o">.</span>\
+        <span class="n">join</span><span class="p">(</span><span class="n">Author</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CommitFile</span><span class="p">)</span><span class="o">.</span>\
+        <span class="n">group_by</span><span class="p">(</span><span class="n">Author</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">CommitFile</span><span class="o">.</span><span class="n">modified_file</span><span class="p">)</span>
+
+    <span class="c1"># Author with max number of lines added per file (owner)</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+    <span class="n">owner</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">modified_file</span>
+        <span class="k">if</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">owner</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">owner</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span><span class="o">.</span><span class="n">total_lines_added</span> <span class="o">&gt;</span> <span class="n">item</span><span class="o">.</span><span class="n">total_lines_added</span><span class="p">:</span>
+                <span class="n">owner</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span> <span class="n">item</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">owner</span><span class="p">[</span><span class="n">fname</span><span class="p">]</span> <span class="o">=</span>  <span class="n">item</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">owner</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+
+<div class="viewcode-block" id="author_number_of_files_owned"><a class="viewcode-back" href="../../apps.html#okra.assn4.author_number_of_files_owned">[docs]</a><span class="k">def</span> <span class="nf">author_number_of_files_owned</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Number of files owned by author. </span>
+
+<span class="sd">    :param results: results from author_file_owned() </span>
+<span class="sd">    :return: {author:  number of files owned}</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">authors</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+
+        <span class="n">authors</span><span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">authors</span></div>
+
+<div class="viewcode-block" id="smallest_owner_set"><a class="viewcode-back" href="../../apps.html#okra.assn4.smallest_owner_set">[docs]</a><span class="k">def</span> <span class="nf">smallest_owner_set</span><span class="p">(</span><span class="n">authors</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Smallest set of authors owning more than half of project files. </span>
+
+<span class="sd">    :param authors: author_number_of_files_owned() output</span>
+<span class="sd">    :param total: total_number_of_files_by_project() output</span>
+<span class="sd">    :return: (number of members in smallest set, smallest set)</span>
+<span class="sd">    :rtype: tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">items</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">authors</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k_v</span><span class="p">:</span> <span class="n">k_v</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">total</span> <span class="o">*</span> <span class="n">size</span><span class="p">)</span>
+    <span class="n">agg</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">members</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">member_count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">agg</span> <span class="o">&lt;=</span> <span class="n">threshold</span><span class="p">:</span>
+
+            <span class="n">members</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">))</span>
+            <span class="n">member_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">agg</span> <span class="o">+=</span> <span class="n">v</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">member_count</span><span class="p">,</span> <span class="n">members</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_truck_factor_by_project"><a class="viewcode-back" href="../../apps.html#okra.assn4.get_truck_factor_by_project">[docs]</a><span class="k">def</span> <span class="nf">get_truck_factor_by_project</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">dal</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Get the &#39;truck factor&#39; by project.</span>
+
+<span class="sd">    1. For each project, and each file, compute how many lines were </span>
+<span class="sd">       added by each unique user.</span>
+<span class="sd">    2. For each project, and each file, find which user created the file.</span>
+<span class="sd">    3. Given the above two results compute the ownership of each file.</span>
+<span class="sd">    4. For each project, and each file pick an owner.</span>
+<span class="sd">    5. For each project, rank the users by the number of files they own.</span>
+<span class="sd">    6. Given all of the above compute the Truck Factor as the smallest set </span>
+<span class="sd">       of users such that they own more than half of the files in the project</span>
+
+<span class="sd">    :param owner: name of owner</span>
+<span class="sd">    :param project: name of project</span>
+<span class="sd">    :param dal: okra.models.DataAccessLayer</span>
+<span class="sd">    :return: Truck factor score for a GitHub project, Truck set members</span>
+<span class="sd">    :rtype: tuple (int, list)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total_files</span> <span class="o">=</span> <span class="n">total_number_of_files_by_project</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">dal</span><span class="p">)</span>
+    <span class="n">owners</span> <span class="o">=</span> <span class="n">author_file_owned</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">dal</span><span class="p">)</span>
+    <span class="n">authors</span> <span class="o">=</span> <span class="n">author_number_of_files_owned</span><span class="p">(</span><span class="n">owners</span><span class="p">)</span>
+    <span class="n">member_count</span><span class="p">,</span> <span class="n">members</span> <span class="o">=</span> <span class="n">smallest_owner_set</span><span class="p">(</span><span class="n">authors</span><span class="p">,</span> <span class="n">total_files</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">member_count</span><span class="p">,</span> <span class="n">members</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Tyler Brown
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
