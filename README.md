@@ -1,12 +1,32 @@
 # Okra
 
-Diagnose git repository health. Health metrics are provided over time.
+Diagnose git health. 
 
-## Install
+## Getting Started
+
+Git health can be related to an individual repo, organization, or
+the dependencies within a repo. 
+
+### Install
 
 ```shell
 python setup.py install
 ```
+
+### Diagnose Health for a git repo
+
+```
+from okra.playbooks import truck_factor
+truck_factor(repo_name)
+```
+
+### Diagnose Health of an Organization on GitHub
+
+clone all their repos, generate a bus schedule
+
+### Diagnose Health of dependencies in git repo
+
+find all dependencies, clone all their repos, generate a bus schedule
 
 ## Tests
 
@@ -22,8 +42,7 @@ Generate documentation
 python setup.py build_sphinx
 ```
 
-View documentation
+## View documentation
 
-```shell
-python -m http.server --directory build/sphinx/html/
-```
+Need to deploy docs to github pages
+
