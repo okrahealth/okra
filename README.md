@@ -1,6 +1,17 @@
 # Okra
 
-Diagnose git health. 
+How healthy is our software? Okra is a tool that diagnoses the health of
+projects which use git version control. Okra uses the 'bus factor' to 
+understand project health. 
+
+
+## What is the bus factor?
+
+
+The bus factor is the smallest sized set of developers which own at least 
+50% of project files. Ownership of a file is determined by the author who
+has contributed the most lines of code in a file.
+
 
 ## Getting Started
 
