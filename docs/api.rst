@@ -31,15 +31,6 @@ Database Models
 .. automodule:: okra.models
    :members:
 
-Redis Finite Queue Management
------------------------------
-
-.. automodule:: okra.redisloader
-   :members:
-
-.. automodule:: okra.rediswq
-   :members:
-
 Okra Exceptions
 ---------------
 
@@ -57,7 +48,3 @@ Polite GitHub Repo Retrieval
 
 .. automodule:: okra.be_nice
    :members:
-
-		
-	
-

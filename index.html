@@ -35,7 +35,7 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Developer Interface" href="api.html" /> 
+    <link rel="next" title="Applications" href="apps.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -84,10 +84,10 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">Developer Interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="apps.html">Applications</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="apps.html">Applications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Developer Interface</a></li>
 </ul>
 
             
@@ -155,6 +155,21 @@
   <div class="section" id="welcome-to-okra-s-documentation">
 <h1>Welcome to okra’s documentation!<a class="headerlink" href="#welcome-to-okra-s-documentation" title="Permalink to this headline">¶</a></h1>
 <p>okra handles GitHub data.</p>
+<div class="section" id="applications">
+<h2>Applications<a class="headerlink" href="#applications" title="Permalink to this headline">¶</a></h2>
+<p>Compute the truck/bus factor for an entire git repository. The bus factor is
+the smallest sized set of developers which own at least 50% of project files.
+Ownership of a file is determined by the author who has contributed the most
+lines of code in a file.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="apps.html">Applications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apps.html#module-okra.assn4">Truck Factor</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
 <div class="section" id="the-api-documentation-guide">
 <h2>The API Documentation / Guide<a class="headerlink" href="#the-api-documentation-guide" title="Permalink to this headline">¶</a></h2>
 <p>If you are looking for information on a specific function, class, or method,
@@ -166,24 +181,9 @@ this part of the documentation is for you.</p>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-okra.repo_mgmt">GitHub Repository Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-okra.gitlogs">Git Log Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-okra.models">Database Models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api.html#redis-finite-queue-management">Redis Finite Queue Management</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-okra.error_handling">Okra Exceptions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-okra.playbooks">Git Playbooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api.html#module-okra.be_nice">Polite GitHub Repo Retrieval</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-<div class="section" id="applications">
-<h2>Applications<a class="headerlink" href="#applications" title="Permalink to this headline">¶</a></h2>
-<p>Certain applications have been implemented using <cite>okra</cite>. You can access
-these applications here. However, <cite>okra</cite> was set up to run these applications
-using a YAML specification provided by the command line as well.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="apps.html">Applications</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="apps.html#module-okra.assn4">Truck Factor</a></li>
 </ul>
 </li>
 </ul>
@@ -207,7 +207,7 @@ using a YAML specification provided by the command line as well.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="api.html" class="btn btn-neutral float-right" title="Developer Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="apps.html" class="btn btn-neutral float-right" title="Applications" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>
