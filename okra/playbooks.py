@@ -11,8 +11,7 @@ from okra.error_handling import (MissingEnvironmentVariableError,
 from okra.models import DataAccessLayer
 from okra.populate_db import populate_db
 from okra.repo_mgmt import (create_parent_dir, clone_repo, update_repo,
-                            compress_repo, decompress_repo,
-                            gcloud_clone_or_fetch_repo)
+                            compress_repo, decompress_repo)
 
 logger = logging.getLogger(__name__)
 
