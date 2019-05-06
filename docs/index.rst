@@ -6,7 +6,9 @@
 Welcome to okra's documentation!
 ================================
 
-okra handles GitHub data.
+How healthy is our software? Okra is a tool that diagnoses the health of
+projects which use git version control. Okra uses the 'bus factor' to 
+understand project health. 
 
 
 Applications
