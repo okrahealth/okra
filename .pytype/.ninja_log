@@ -1,0 +1,10 @@
+# ninja log v5
+1	1908	1557253430426410191	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/protobuf/__init__.pyi	e6064064a2a7a07c
+7	2018	1557253430498806239	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/error_handling.pyi	80f8a52c4af6e393
+5	2550	1557253431030169724	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi	33dfbe4c41287944
+4	3509	1557253432034589634	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/protobuf/proto_utils.pyi	d50083ba13773cb1
+1908	3729	1557253432269918986	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/__init__.pyi	1dea41a26982a49b
+3729	5242	1557253433788434210	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/exceptions.pyi	a96c467dbeff3104
+3509	5498	1557253434009376859	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/assn4.pyi	4ee24e586cf8a2ce
+2550	6450	1557253434896325702	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/distributed.pyi	fb4bef24fec26999
+0	744	1557253450775238262	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/error_handling.pyi	c8af1054d67f680f
