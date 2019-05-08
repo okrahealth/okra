@@ -109,7 +109,7 @@ def tbl_repository_metrics(rd: list, pqcache: str, name='repo_metrics'):
 
 def tbl_contributor():
     """ Contributor table """
-
+    pass
 
 # Contributor
 
