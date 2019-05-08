@@ -21,6 +21,10 @@ the dependencies within a repo.
 python setup.py install
 ```
 
+#### Configure pipenv
+
+- Follow the instructions in the [pipenv README](https://github.com/pypa/pipenv)
+
 ### Diagnose Health for a git repo
 
 ```
