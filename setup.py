@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='okra',
-    version='1.2dev0',
+    version='1.2dev1',
     packages=["okra", "okra/protobuf"],
     license='MIT',
     long_description=open('README.md').read(),
