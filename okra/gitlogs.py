@@ -24,7 +24,8 @@ def parse_inventory(rpath: str, repo_name: str):
     owner, project = repo_name.split("/")
 
     c = ["git", "log", "-1", "--pretty=%H"]
-    res = subprocess.run(c, cwd=rpath, capture_output=True)
+    res = subprocess.run(c, cwd=rpath, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
 
     if res.returncode == 0:
         logger.info("SUCCESS - extracted inventory info")
@@ -61,7 +62,8 @@ def parse_commits(rpath: str, chash=""):
               "--pretty=%H^|^%an^|^%ae^|^%aI^|^%cn^|^%ce^|^%cI",
               "{}..HEAD".format(chash)]
 
-    res = subprocess.run(c1, cwd=rpath, capture_output=True)
+    res = subprocess.run(c1, cwd=rpath, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
 
     if res.returncode == 0:
         logger.info("SUCCESS -- extracted git commit info")
@@ -125,7 +127,8 @@ def parse_messages(rpath: str, chash=""):
               "--pretty=^^!^^%H^|^%s^|^%b^|^%aI",
               "{}..HEAD".format(chash)]
         
-    res = subprocess.run(c1, cwd=rpath, capture_output=True)
+    res = subprocess.run(c1, cwd=rpath, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
 
     if res.returncode == 0:
         logger.info("SUCCESS -- extracted messages_csv info")
@@ -183,7 +186,8 @@ def parse_committed_files(rpath: str, chash=''):
               '--numstat',
               "{}..HEAD".format(chash)]
 
-    res = subprocess.run(c1, cwd=rpath, capture_output=True)
+    res = subprocess.run(c1, cwd=rpath, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
 
     if res.returncode != 0:
         logger.error("Unable find file info: {}".format(rpath))        
