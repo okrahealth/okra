@@ -6,6 +6,8 @@ import tempfile
 import unittest
 from urllib.parse import urljoin
 
+from rfc3339 import parse_datetime
+
 from okra.github import repo_to_objects
 from okra.playbooks import retrieve_or_clone
 
@@ -49,8 +51,7 @@ class TestGithub(unittest.TestCase):
         assert r0.commit_hash == 'b6ca6229284e18b0ce8defeb4b240aa2f26223b4'
         assert r0.subject == "added a function with friends."
         assert r0.message == 'Co-authored-by: johnbaldwin <john@appsembler.com>\nCo-authored-by: awong <angela@angela.com\n'
-        assert r0.created == datetime.\
-            fromisoformat('2019-02-26T18:22:54-05:00')
+        assert r0.created == parse_datetime('2019-02-26T18:22:54-05:00')
 
         # Meta
 
@@ -67,8 +68,7 @@ class TestGithub(unittest.TestCase):
         assert r2.commit_hash == 'b6ca6229284e18b0ce8defeb4b240aa2f26223b4'
         assert r2.name == 'tbonza'
         assert r2.email == 'tylers.pile@gmail.com'
-        assert r2.authored == datetime.\
-            fromisoformat('2019-02-26T18:22:54-05:00')
+        assert r2.authored == parse_datetime('2019-02-26T18:22:54-05:00')
 
         # Contributor0
 
@@ -78,8 +78,7 @@ class TestGithub(unittest.TestCase):
         assert r3.commit_hash == 'b6ca6229284e18b0ce8defeb4b240aa2f26223b4'
         assert r3.name == 'tbonza'
         assert r3.email == 'tylers.pile@gmail.com'
-        assert r3.contributed ==  datetime.\
-            fromisoformat('2019-02-26T18:22:54-05:00')
+        assert r3.contributed ==  parse_datetime('2019-02-26T18:22:54-05:00')
 
         # Contributor1
 
@@ -89,8 +88,7 @@ class TestGithub(unittest.TestCase):
         assert r4.commit_hash == 'b6ca6229284e18b0ce8defeb4b240aa2f26223b4'
         assert r4.name == 'johnbaldwin'
         assert r4.email == 'john@appsembler.com'
-        assert r4.contributed == datetime.\
-            fromisoformat('2019-02-26T18:22:54-05:00')
+        assert r4.contributed == parse_datetime('2019-02-26T18:22:54-05:00')
 
         # CommitFile
 
