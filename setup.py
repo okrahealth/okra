@@ -11,6 +11,7 @@ setup(
         'protobuf==3.6.1',
         'pyarrow==0.13.0',
         'sqlalchemy>=1.3.0',
+        'tonyg-rfc3339==0.1',
     ],
     scripts=['bin/okra',],
     setup_requires=['pytest-runner'],

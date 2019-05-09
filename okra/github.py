@@ -9,6 +9,8 @@ import os
 import re
 from urllib.parse import urljoin
 
+from rfc3339 import parse_datetime
+
 from okra.error_handling import DirectoryNotCreatedError
 from okra.models import Meta, Author, Contrib, CommitFile, Info, Inventory
 from okra.gitlogs import (parse_commits, parse_messages,
@@ -66,7 +68,7 @@ def repo_to_objects(repo_name: str, cache: str, last_commit=""):
             commit_hash=msg.hash_val,
             subject=msg.subject,
             message=msg.message_body,
-            created=datetime.fromisoformat(msg.timestamp)
+            created=parse_datetime(msg.timestamp)
         )
 
         o,p = repo_name.split('/')
@@ -80,7 +82,7 @@ def repo_to_objects(repo_name: str, cache: str, last_commit=""):
             commit_hash=cmt.hash_val,
             name=cmt.author,
             email=cmt.author_email,
-            authored=datetime.fromisoformat(cmt.author_timestamp)
+            authored=parse_datetime(cmt.author_timestamp)
         )
 
         contrib_item = Contrib(
@@ -88,7 +90,7 @@ def repo_to_objects(repo_name: str, cache: str, last_commit=""):
             commit_hash=cmt.hash_val,
             name=cmt.committer,
             email=cmt.committer_email,
-            contributed=datetime.fromisoformat(cmt.committer_timestamp)
+            contributed=parse_datetime(cmt.committer_timestamp)
         )        
         yield msg_item
         yield meta_item
@@ -107,7 +109,7 @@ def repo_to_objects(repo_name: str, cache: str, last_commit=""):
                     commit_hash=msg.hash_val,
                     name=item[0].strip(),
                     email=item[1].strip(),
-                    contributed=datetime.fromisoformat(msg.timestamp)
+                    contributed=parse_datetime(msg.timestamp)
                 )
                 yield contrib_item
                 contrib_id += 1
