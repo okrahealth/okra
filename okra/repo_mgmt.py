@@ -38,7 +38,8 @@ def create_parent_dir(repo_name: str, dirpath: str) -> bool:
     if os.path.exists(ppath):
         return True
 
-    res = subprocess.run(["mkdir", ppath], capture_output=True)
+    res = subprocess.run(["mkdir", ppath], stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
 
     if res.returncode == 0 and os.path.exists(ppath):
         return True
@@ -74,7 +75,8 @@ def clone_repo(repo_name: str, dirpath: str, ssh=False) -> bool:
             
         rpath = urljoin(dirpath, repo_name)
         res = subprocess.run(["git", "clone", repo_path, rpath],
-                             capture_output=True)
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
 
         if res.returncode == 0 and os.path.exists(rpath):
             return True
@@ -91,7 +93,8 @@ def update_repo(repo_name: str, dirpath: str) -> bool:
     """ Update repo with new code. """
     c1 = ["git", "fetch"]
     rpath = urljoin(dirpath, repo_name)
-    res = subprocess.run(c1, cwd=rpath, capture_output=True)
+    res = subprocess.run(c1, cwd=rpath, stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
 
     if res.returncode == 0:
         return True
@@ -109,7 +112,8 @@ def compress_repo(repo_name: str, cache: str, repo_comp: str) -> bool:
     :rtype: True if git repo successfully compressed
     """
     c1 = ["tar", "-zcf", repo_comp, repo_name]
-    res = subprocess.run(c1, cwd=cache, capture_output=True)
+    res = subprocess.run(c1, cwd=cache, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
 
     if res.returncode == 0:
         return True
@@ -132,7 +136,7 @@ def decompress_repo(repo_comp: str, cache) -> bool:
     :raises: :class:`okra.error_handling.DirectoryNotCreatedError`
     """
     c2 = ["tar", "-zxf", repo_comp, "-C", cache]
-    res = subprocess.run(c2, capture_output=True)
+    res = subprocess.run(c2, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     if res.returncode == 0:
         return True
