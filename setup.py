@@ -6,6 +6,7 @@ setup(
     packages=["okra", "okra/protobuf"],
     license='MIT',
     long_description=open('README.md').read(),
+    python_requires=">=3.6",
     install_requires=[
         'pandas==0.24.2',
         'protobuf==3.6.1',
