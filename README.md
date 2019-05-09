@@ -1,5 +1,7 @@
 # Okra
 
+[![image](https://travis-ci.org/okrahealth/okra.svg?branch=master)](https://travis-ci.com/)
+
 Diagnose git health. 
 
 ## Getting Started
