@@ -6,7 +6,24 @@
 Welcome to okra's documentation!
 ================================
 
-okra handles GitHub data.
+How healthy is our software? Okra is a tool that diagnoses the health of
+projects which use git version control. Okra uses the 'bus factor' to 
+understand project health. 
+
+
+Applications
+------------
+
+Compute the truck/bus factor for an entire git repository. The bus factor is
+the smallest sized set of developers which own at least 50% of project files.
+Ownership of a file is determined by the author who has contributed the most
+lines of code in a file.
+
+.. toctree::
+   :maxdepth: 2
+
+   apps
+
 
 The API Documentation / Guide
 -----------------------------
@@ -19,17 +36,6 @@ this part of the documentation is for you.
 
    api
 
-Applications
-------------
-
-Certain applications have been implemented using `okra`. You can access
-these applications here. However, `okra` was set up to run these applications
-using a YAML specification provided by the command line as well.
-
-.. toctree::
-   :maxdepth: 2
-
-   apps
 
 
 Indices and tables

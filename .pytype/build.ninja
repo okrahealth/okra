@@ -1,0 +1,12 @@
+rule infer
+  command = pytype-single --imports_info $imports --module-name $module -V 3.7 -o $out --no-report-errors --nofail --quick $in
+  description = infer $module
+rule check
+  command = pytype-single --imports_info $imports --module-name $module -V 3.7 -o $out --analyze-annotated --nofail --quick $in
+  description = check $module
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/error_handling.pyi: infer /Users/tylerbrown/projects/okra/okra/error_handling.py
+  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.error_handling.imports
+  module = okra.error_handling
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repo_mgmt.pyi: check /Users/tylerbrown/projects/okra/okra/repo_mgmt.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/error_handling.pyi
+  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.repo_mgmt.imports
+  module = okra.repo_mgmt

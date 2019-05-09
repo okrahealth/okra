@@ -6,6 +6,7 @@ setup(
     packages=["okra", "okra/protobuf"],
     license='MIT',
     long_description=open('README.md').read(),
+<<<<<<< HEAD
     python_requires=">=3.6",
     install_requires=[
         'pandas==0.24.2',
@@ -15,6 +16,9 @@ setup(
         'tonyg-rfc3339==0.1',
     ],
     scripts=['bin/okra',],
+=======
+    scripts=['bin/okra', ],
+>>>>>>> devel
     setup_requires=['pytest-runner'],
     test_requires=[
         'pytest',
