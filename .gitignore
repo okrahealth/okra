@@ -23,4 +23,3 @@ build
 .eggs
 *.egg-info
 dist/
-Pipfile.lock

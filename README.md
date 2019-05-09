@@ -2,6 +2,7 @@
 
 [![image](https://travis-ci.org/okrahealth/okra.svg?branch=master)](https://travis-ci.com/)
 
+
 Diagnose git health. 
 =======
 How healthy is our software? Okra is a tool that diagnoses the health of

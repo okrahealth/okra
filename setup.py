@@ -2,11 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name='okra',
-    version='1.1dev0',
+    version='1.2dev0',
     packages=["okra", "okra/protobuf"],
     license='MIT',
     long_description=open('README.md').read(),
-<<<<<<< HEAD
     python_requires=">=3.6",
     install_requires=[
         'pandas==0.24.2',
@@ -16,14 +15,23 @@ setup(
         'tonyg-rfc3339==0.1',
     ],
     scripts=['bin/okra',],
-=======
-    scripts=['bin/okra', ],
->>>>>>> devel
     setup_requires=['pytest-runner'],
     test_requires=[
         'pytest',
         'pytype',
     ],
     test_suite='pytest',
-    zip_safe=False
+    zip_safe=False,
+    classifiers=[
+        'Development Status :: 2 - Pre-Alpha',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+    ]
 )
