@@ -32,6 +32,26 @@ def total_number_of_files_by_project(owner, project, dal):
     group_by(CommitFile.modified_file).all()
     return len(q)
 
+def total_number_of_contributors_by_project(owner, project, dal):
+    """ Compute the total number of contributors by project.
+
+    :param owner: name of owner
+    :param project: name of project
+    :param dal: okra.models.DataAccessLayer
+    :return: the total number of contributors in a project
+    :rtype: int
+    """
+    q = dal.session.query(
+        Meta.owner_name, Meta.project_name, Author.email
+    ).\
+    filter(
+        Meta.owner_name == owner, Meta.project_name == project
+    ).\
+    join(Author).\
+    group_by(Author.name)
+    results = q.all()
+    return len(results)
+
 def author_file_owned(owner, project, dal):
     """ Compute file ownership by each author. 
 
