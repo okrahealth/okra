@@ -12,7 +12,9 @@ from urllib.parse import urljoin
 import pandas as pd
 import pyarrow as pa
 
-from okra.assn4 import get_truck_factor_by_project
+from okra.assn4 import (get_truck_factor_by_project,
+                        total_number_of_files_by_project,
+                        total_number_of_contributors_by_project)
 from okra.exceptions import UrlJoinError
 from okra.models import DataAcessLayer
 from okra.settings import REPO_LIST
@@ -93,10 +95,14 @@ def tbl_repository_metrics(rd: list, pqcache: str, name='repo_metrics'):
             repo_id = item['repo_id']
             owner, project = repo_id.split('/')
             truck_factor, _ = get_truck_factor_by_project(owner, project, dal)
+            total_number_of_files = total_number_of_files_by_project(owner, project, dal)
+            total_number_of_contributors = total_number_of_contributors_by_project(owner, project, dal)
 
             results.append({
                 'repo_id': repo_id,
                 'rating': truck_factor,
+                'total_number_of_files': total_number_of_files,
+                'total_number_of_contributors': total_number_of_contributors
             })
 
         dal.session.close()

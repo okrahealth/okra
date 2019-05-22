@@ -9,6 +9,7 @@ import unittest
 from okra.models import (DataAccessLayer, Meta, Author, Contrib,
                          CommitFile, Info)
 from okra.assn4 import (total_number_of_files_by_project,
+                        total_number_of_contributors_by_project,
                         author_file_owned, author_number_of_files_owned,
                         smallest_owner_set,
                         get_truck_factor_by_project)
@@ -136,6 +137,10 @@ class TestAssn4(unittest.TestCase):
         result = total_number_of_files_by_project("Tyler", "okra", self.dal)
 
         assert result == 9
+
+    def test_total_number_of_contributors_by_project(self):
+        result = total_number_of_contributors_by_project("Tyler", "okra", self.dal)
+        assert result == 4
 
     def test_author_file_owned(self):
         result = author_file_owned("Tyler", "okra", self.dal)
