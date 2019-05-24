@@ -24,53 +24,56 @@ the dependencies within a repo.
 
 ## Setup and Installation (for development)
 
-### Step 1: Configure pipenv
+We use [GNU make](https://www.gnu.org/software/make/manual/make.html#Introduction) to 
+organize our build. It allows us to break our our package and development dependencies.
+It also allows us to automate common tasks like running tests or building documentation.
 
-- Follow the instructions in the [pipenv README](https://github.com/pypa/pipenv/blob/master/README.md) to install pipenv on your system
+### Step 1: Install and Configure a virtual environment
 
-### Step 2: Install dependencies
-
-```shell
-pipenv install
-python setup.py install
-```
-
-### Step 3: Start pipenv shell
-
-```shell
-pipenv shell
-```
-
-This will spawn a new shell subprocess, which can be deactivated by using exit.
-
-### Diagnose Health for a git repo
+The recommended virtual environment for a statistical package is [Miniconda](https://docs.conda.io/en/latest/miniconda.html). Once you have correctly installed
+Miniconda, you can create an environment for Okra by executing the following commands
+in your terminal
 
 ```
-from okra.playbooks import truck_factor
-truck_factor(repo_name)
+$ conda create -n myenv python=3.6
+$ conda activate myenv
 ```
 
-### Diagnose Health of an Organization on GitHub
+You can call `myenv` whatever is memorable for you. I've been using `ok` for mine.
 
-clone all their repos, generate a bus schedule
+### Step 2: Configuring your Development environment
 
-### Diagnose Health of dependencies in git repo
+Assuming that your virtual environment is activated, clone the Okra
+repository and install the required development dependencies:
 
-find all dependencies, clone all their repos, generate a bus schedule
-
-## Tests
-
-```shell
-python setup.py test
 ```
+$ git clone https://github.com/okrahealth/okra.git
+$ cd okra
+$ make dev
+```
+
+### Step 3: Validate your development environment by getting tests passing
+
+Assuming successful completion of steps (1) and (2), there should be no issue
+getting tests passing.
+
+```
+$ make test
+```
+
+You should see a message similar to
+
+```
+...
+========================== 27 passed, 2 warnings in 0.45 seconds ===========================
+```
+
+If tests are not passing for some reason, please open a ticket using
+GitHub issues [okrahealth/okra/issues](https://github.com/okrahealth/okra/issues). 
+You can also request membership to our slack channel, [https://okrahealth.slack.com](https://okrahealth.slack.com).
 
 ## Documentation
 
-Generate documentation
-
-```shell
-python setup.py build_sphinx
-```
-
 - [Okra Documentation](https://okrahealth.github.io/okra/)
+- [OkraHealth Website](https://okrahealth.github.io/)
 
