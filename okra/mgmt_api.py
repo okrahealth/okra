@@ -10,7 +10,6 @@ import logging
 from urllib.parse import urljoin
 
 import pandas as pd
-import pyarrow as pa
 
 from okra.assn4 import (get_truck_factor_by_project,
                         total_number_of_files_by_project,
@@ -60,7 +59,7 @@ def msg_repository_info(dal: DataAccessLayer):
 
 
 
-def tbl_repository_metrics(rd: list, pqcache: str, name='repo_metrics'):
+def tbl_repository_metrics(dburl: str, rd: list, pqcache: str, name='repo_metrics'):
     """ RepositoryMetrics table 
 
     rating is the computed truck factor for a project.
@@ -87,9 +86,8 @@ def tbl_repository_metrics(rd: list, pqcache: str, name='repo_metrics'):
             })
 
         dal.session.close()
-        pqname = parquet_filename(name=name)
-        return write_parquet(results, pqcache, pqname)
-
+        return results
+    
     except Exception as exc:
         logger.exception(exc)
 
