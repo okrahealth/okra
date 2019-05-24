@@ -72,7 +72,7 @@ If tests are not passing for some reason, please open a ticket using
 GitHub issues [okrahealth/okra/issues](https://github.com/okrahealth/okra/issues). 
 You can also request membership to our slack channel, [https://okrahealth.slack.com](https://okrahealth.slack.com).
 
-## Static Type Checking
+### Static Type Checking
 
 We use a static type analyzer, [google/pytype](https://github.com/google/pytype),
 to catch preventable bugs before they come out at runtime:
@@ -91,6 +91,20 @@ $ make fpath=okra/be_nice.py check
 
 where `okra/be_nice.py` can be any relative filepath that you've been
 developing.
+
+### Protocol Buffers
+
+We use protocol buffers to define an interface between this package and the 
+other Okra projects like [okrahealth/okra-api](https://github.com/okrahealth/okra-api). If new to protocol buffers, review [developers.google.com/protocol-buffers](https://developers.google.com/protocol-buffers/). Make sure you
+have the [protocol buffer compiler](https://github.com/protocolbuffers/protobuf) installed. Protobuf files can be generated for the Okra Python
+package:
+
+```
+$ make proto
+```
+
+Please contact a core developer before making any changes to the
+`*.proto` files in `okra/protos/`.
 
 ## Documentation
 

@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='okra',
     version='1.2dev2',
-    packages=["okra"],
+    packages=["okra", "okra/protos"],
     license='MIT',
     long_description=open('README.md').read(),
     python_requires=">=3.6",
