@@ -77,3 +77,9 @@ You can also request membership to our slack channel, [https://okrahealth.slack.
 - [Okra Documentation](https://okrahealth.github.io/okra/)
 - [OkraHealth Website](https://okrahealth.github.io/)
 
+## Usage
+
+This statistical library is currently being used to compute batch jobs to populate
+the database in [github.com/okrahealth/okra-api](https://github.com/okrahealth/okra-api).
+We are not supporting other use cases at this time.
+
