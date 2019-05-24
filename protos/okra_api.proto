@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package okra.v1;
+
+/* This interface is intended to mirror the Okra-API models.
+ * Okra-API consumes output from Okra using a batch process
+ * so gRPC is not necessary.
+ */
