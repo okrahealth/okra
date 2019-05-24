@@ -72,6 +72,26 @@ If tests are not passing for some reason, please open a ticket using
 GitHub issues [okrahealth/okra/issues](https://github.com/okrahealth/okra/issues). 
 You can also request membership to our slack channel, [https://okrahealth.slack.com](https://okrahealth.slack.com).
 
+## Static Type Checking
+
+We use a static type analyzer, [google/pytype](https://github.com/google/pytype),
+to catch preventable bugs before they come out at runtime:
+
+* Lint plain Python code, flagging common mistakes such as mispelled attribute names,
+  incorrect function calls, and [many other errors](https://github.com/google/pytype/blob/master/docs/errors.md), even across file boundaries.
+* Enforce user-provided [type annotations](https://www.python.org/dev/peps/pep-0484/). 
+  While annotations are optional for pytype, it will check and apply them where 
+  present.
+  
+More information can be found in the [pytype user guide](https://github.com/google/pytype/blob/master/docs/user_guide.md) or [pytype FAQ](https://github.com/google/pytype/blob/master/docs/faq.md). We use static type checking in Okra via the makefile:
+
+```
+$ make fpath=okra/be_nice.py check
+```
+
+where `okra/be_nice.py` can be any relative filepath that you've been
+developing.
+
 ## Documentation
 
 - [Okra Documentation](https://okrahealth.github.io/okra/)

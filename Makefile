@@ -8,3 +8,5 @@ docs: dev
 	python setup.py build_sphinx
 package: test docs
 	python setup.py sdist
+check:
+	pytype $(fpath)

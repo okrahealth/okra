@@ -10,3 +10,11 @@
 0	744	1557253450775238262	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/error_handling.pyi	c8af1054d67f680f
 0	920	1557254328090643492	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi	b2a52a68d1c63472
 920	1835	1557254329011365245	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/assn4.pyi	4ee24e586cf8a2ce
+1	1444	1558704087674612150	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/repo_mgmt.pyi	ebfc07654191afe7
+0	1614	1558704087821744751	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/assn1_pb2.pyi	889be3f1d32edb90
+1614	3453	1558704089616200785	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/gitlogs.pyi	b48d92a4cdd89651
+3453	5099	1558704091304342341	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/github.pyi	aa0009782f163b31
+0	840	1558704128990861573	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/assn4.pyi	4b39a167fcb740c6
+1	1459	1558704129596858799	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/populate_db.pyi	9320d2bc35fda84a
+1459	2936	1558704131069740646	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/playbooks.pyi	15e748d08abe7e9b
+2936	4459	1558704132586999727	/Users/tylerbrown/projects/okra/.pytype/pyi/okra/be_nice.pyi	bcad3d6a7bbe75a3
