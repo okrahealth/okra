@@ -15,68 +15,49 @@ import pyarrow as pa
 from okra.assn4 import (get_truck_factor_by_project,
                         total_number_of_files_by_project,
                         total_number_of_contributors_by_project)
-from okra.exceptions import UrlJoinError
-from okra.models import DataAcessLayer
-from okra.settings import REPO_LIST
+from okra.models import DataAccessLayer, Author, Meta
+from okra.proto import okra_api_pb2
 
 
 logger = logging.getLogger(__name__)
 
+def date_toiso(datetime, timespec='minutes'):
+    return datetime.isoformat(timespec=timespec)
 
-def check_urljoin(cache: str, fname: str, fpath: str) -> bool:
-    if fpath == fname:
+def msg_repository_metric():
+    msg = okra_api_pb2.RepositoryMetric()
 
-        exp = 'cache: {}, fname: {}, fpath: {}'.\
-            format(cache, fname, fpath)
-        raise UrlJoinError(expression=exp, message='incorrect urljoin')
+def msg_repository_info(dal: DataAccessLayer):
+    """ Compute RepositoryInfo message """
+    
+    msg = okra_api_pb2.RepositoryInfo()
 
-    return True
+    q = dal.session.query(
+        Meta.owner_name, Meta.project_name, Author.commit_hash,
+        Author.authored
+    ).join(Author)
 
+    qres = q.all()
 
-def write_parquet(rd: list, pqcache: str, fname: str) -> bool:
+    msg.owner_name = qres[0].owner_name
+    msg.repo_name = qres[0].project_name
+    msg.first_commit_date = date_toiso(qres[0].authored)
+    msg.first_commit_hash = qres[0].commit_hash
+    msg.last_commit_date = date_toiso(qres[-1].authored)
+    msg.last_commit_hash = qres[-1].commit_hash
 
-    try:
-        df = pd.DataFrame(rd)
-        table = pa.Table.from_pandas(df)
-        pa.parquet.write_table(table, fname)
-        return True
-
-    except Exception as exc:
-        logger.exception(exc)
-        return False
-
-
-def read_repolist(fpath: str):
-    with open(repo_path, 'r') as infile:
-        repos = infile.readlines()
-
-    rd = []
-    for repo_id in repos:
-        rd.append({'repo_id': repo_id.strip()})
-    return rd
+    return msg
+    
 
 
-def parquet_filename(name: str):
-    d = datetime.now()
-    ymdhm = d.strftime('%Y%m%d_%H%M')
+    
 
-    pq_filename = name + "_" + ymdhm + ".parquet"
-    return pq_filename
+    
 
-# Okra API database table preparation files
-#
+    
+    
 
 
-def tbl_repository(repo_path, cache, pqcache, name='repository') -> str:
-    """ Repository table (each repo id in directory) """
-
-    try:
-        rd = read_repolist(repo_path)
-        pqname = parquet_filename(name=name)
-        return write_parquet(rd, pqcache, pqname)
-
-    except Exception as exc:
-        logger.exception(exc)
 
 
 def tbl_repository_metrics(rd: list, pqcache: str, name='repo_metrics'):

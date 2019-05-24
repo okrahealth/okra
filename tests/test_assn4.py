@@ -32,11 +32,16 @@ def mock_github_project_db(session):
     session.commit()
 
     author_commits = [
-        Author(commit_hash="1", name="Tyler", authored=datetime.now()),
-        Author(commit_hash="2", name="Tyler", authored=datetime.now()),
-        Author(commit_hash="3", name="Chaitya", authored=datetime.now()),
-        Author(commit_hash="4", name="Angela", authored=datetime.now()),
-        Author(commit_hash="5", name="Chris", authored=datetime.now()),
+        Author(commit_hash="1", name="Tyler",
+               authored=datetime(2015, 1, 1, 12, 30, 59, 0)),
+        Author(commit_hash="2", name="Tyler",
+               authored=datetime(2015, 6, 1, 12, 30, 59, 0)),
+        Author(commit_hash="3", name="Chaitya",
+               authored=datetime(2015, 6, 3, 12, 30, 59, 0)),
+        Author(commit_hash="4", name="Angela",
+               authored=datetime(2017, 1, 1, 12, 30, 59, 0)),
+        Author(commit_hash="5", name="Chris",
+               authored=datetime(2017, 6, 1, 12, 30, 59, 0)),
     ]
 
     session.bulk_save_objects(author_commits)
@@ -44,17 +49,23 @@ def mock_github_project_db(session):
 
     contrib_commits = [
         Contrib(contrib_id=1, commit_hash="1",
-                name="Tyler", contributed=datetime.now()),
+                name="Tyler",
+                contributed=datetime(2015, 1, 1, 12, 30, 59, 0)),
         Contrib(contrib_id=2, commit_hash="1",
-                name="Diego", contributed=datetime.now()),
+                name="Diego",
+                contributed=datetime(2015, 1, 1, 12, 30, 59, 0)),
         Contrib(contrib_id=3, commit_hash="2",
-                name="Tyler", contributed=datetime.now()),
+                name="Tyler",
+                contributed=datetime(2015, 6, 1, 12, 30, 59, 0)),
         Contrib(contrib_id=4, commit_hash="3",
-                name="Chaitya", contributed=datetime.now()),
+                name="Chaitya",
+                contributed=datetime(2015, 6, 3, 12, 30, 59, 0)),
         Contrib(contrib_id=5, commit_hash="4",
-                name="Angela", contributed=datetime.now()),
+                name="Angela",
+                contributed=datetime(2017, 1, 1, 12, 30, 59, 0)),
         Contrib(contrib_id=6, commit_hash="5",
-                name="Chris", contributed=datetime.now()),
+                name="Chris",
+                contributed=datetime(2017, 6, 1, 12, 30, 59, 0)),
     ] # note that truck factor will exclude multiple contributors
 
     session.bulk_save_objects(contrib_commits)
@@ -104,11 +115,11 @@ def mock_github_project_db(session):
     session.commit()
 
     commit_info = [
-        Info(commit_hash="1", created=datetime.now()),
-        Info(commit_hash="2", created=datetime.now()),
-        Info(commit_hash="3", created=datetime.now()),
-        Info(commit_hash="4", created=datetime.now()),
-        Info(commit_hash="5", created=datetime.now()),
+        Info(commit_hash="1", created=datetime(2015, 1, 1, 12, 30, 59, 0)),
+        Info(commit_hash="2", created=datetime(2015, 6, 1, 12, 30, 59, 0)),
+        Info(commit_hash="3", created=datetime(2015, 6, 3, 12, 30, 59, 0)),
+        Info(commit_hash="4", created=datetime(2017, 1, 1, 12, 30, 59, 0)),
+        Info(commit_hash="5", created=datetime(2017, 6, 1, 12, 30, 59, 0)),
     ]
 
     session.bulk_save_objects(commit_info)
@@ -137,10 +148,6 @@ class TestAssn4(unittest.TestCase):
         result = total_number_of_files_by_project("Tyler", "okra", self.dal)
 
         assert result == 9
-
-    def test_total_number_of_contributors_by_project(self):
-        result = total_number_of_contributors_by_project("Tyler", "okra", self.dal)
-        assert result == 4
 
     def test_author_file_owned(self):
         result = author_file_owned("Tyler", "okra", self.dal)

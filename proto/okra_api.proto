@@ -10,19 +10,20 @@ package okra.v1;
 // okra-api/pick_okra/models:RepositoryMetrics
 message RepositoryMetric {
   string repo_id = 1;
-  float rating = 2;
-}
-
-// okra-api/pick_okra/models:Contributor
-message Contributor {
-  string contrib_name = 1;
-  string repo_id = 2;
+  int32 truck_factor = 2;
+  int32 total_files = 3;
+  int32 total_contributor = 4;
+  int32 truck_30day = 5;
+  int32 truck_60day = 6;
+  int32 truck_90day = 7;
 }
 
 // okra-api/pick_okra/models:RepositoryInfo
 message RepositoryInfo {
-  string repo_id = 1;
+  string owner_name = 1;
   string repo_name = 2;
-  string repo_namespace = 3;
-  string first_commit_date = 4;
+  string first_commit_date = 3;
+  string first_commit_hash = 4;
+  string last_commit_date = 5;
+  string last_commit_hash = 6;
 }

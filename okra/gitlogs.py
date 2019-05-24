@@ -10,7 +10,7 @@ import os
 import subprocess
 
 from okra.repo_mgmt import read_repos
-from okra.protos.assn1_pb2 import Commit, Message, File, Inventory
+from okra.proto.assn1_pb2 import Commit, Message, File, Inventory
 
 logger = logging.getLogger(__name__)
 

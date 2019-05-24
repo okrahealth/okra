@@ -10,6 +10,6 @@ package: test docs
 	python setup.py sdist
 check:
 	pytype $(fpath)
-proto:
-	protoc -I. --python_out=okra/ protos/* ;\
-	touch okra/protos/__init__.py
+proto: 
+	protoc -I. --python_out=okra/ proto/* ;\
+	touch okra/proto/__init__.py

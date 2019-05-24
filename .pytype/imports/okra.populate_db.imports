@@ -5,6 +5,6 @@ okra/models /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi
 rfc3339 /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 okra/error_handling /Users/tylerbrown/projects/okra/.pytype/pyi/okra/error_handling.pyi
 okra/repo_mgmt /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repo_mgmt.pyi
-okra/assn1_pb2 /Users/tylerbrown/projects/okra/.pytype/pyi/okra/assn1_pb2.pyi
+okra/protos/assn1_pb2 /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 okra/gitlogs /Users/tylerbrown/projects/okra/.pytype/pyi/okra/gitlogs.pyi
 okra/github /Users/tylerbrown/projects/okra/.pytype/pyi/okra/github.pyi
