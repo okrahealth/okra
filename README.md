@@ -12,10 +12,9 @@ understand project health.
 
 ### What is the bus factor?
 
-The bus factor is the smallest sized set of developers which own at least
+The bus factor is the smallest sized set of developers which own at least 
 50% of project files. Ownership of a file is determined by the author who
 has contributed the most lines of code in a file.
-
 
 ## Getting Started
 
