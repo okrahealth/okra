@@ -16,11 +16,6 @@ The bus factor is the smallest sized set of developers which own at least
 50% of project files. Ownership of a file is determined by the author who
 has contributed the most lines of code in a file.
 
-## Getting Started
-
-Git health can be related to an individual repo, organization, or
-the dependencies within a repo.
-
 ## Setup and Installation (for development)
 
 We use [GNU make](https://www.gnu.org/software/make/manual/make.html#Introduction) to 
