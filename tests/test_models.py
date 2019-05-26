@@ -13,8 +13,9 @@ from okra.models import (DataAccessLayer, Meta, Author,
 def mock_db(session):
     commit_hash = "12345"
     cm1 = Meta(commit_hash=commit_hash,
-                    owner_name="Tyler",
-                    project_name="okra")
+               owner_name="Tyler",
+               project_name="okra",
+               yearmo='2019-01')
 
     ca1 = Author(commit_hash=commit_hash,
                  name="Tyler",

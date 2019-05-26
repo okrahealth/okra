@@ -33,6 +33,7 @@ class Meta(Base):
                          index=True)
     owner_name = Column('owner_name', String(100), nullable=False)
     project_name = Column('project_name', String(150), nullable=False)
+    yearmo = Column('year_mo', String(7), nullable=False)
 
 class Author(Base):
     """ 

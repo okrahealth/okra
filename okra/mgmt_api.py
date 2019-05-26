@@ -3,6 +3,8 @@
 Strategy here is to check a directory for updates, then 
 consolidate those into parquet files with datetime in file
 name. Those parquet files are then uploaded into the Okra API.
+
+Metrics are targeting the 'proto/okra_api.proto' interface.
 """
 from datetime import datetime
 import os
@@ -23,40 +25,45 @@ logger = logging.getLogger(__name__)
 def date_toiso(datetime, timespec='minutes'):
     return datetime.isoformat(timespec=timespec)
 
-def msg_repository_metric():
-    msg = okra_api_pb2.RepositoryMetric()
-
-def msg_repository_info(dal: DataAccessLayer):
+def msg_repository_info(dal: DataAccessLayer, repo_id: str, yearmo: str):
     """ Compute RepositoryInfo message """
-    
+
     msg = okra_api_pb2.RepositoryInfo()
 
     q = dal.session.query(
-        Meta.owner_name, Meta.project_name, Author.commit_hash,
-        Author.authored
-    ).join(Author)
+        Meta.yearmo, Author.commit_hash, Author.authored
+    ).join(Author).filter(Meta.yearmo == yearmo).order_by(Author.authored)
 
     qres = q.all()
 
-    msg.owner_name = qres[0].owner_name
-    msg.repo_name = qres[0].project_name
-    msg.first_commit_date = date_toiso(qres[0].authored)
-    msg.first_commit_hash = qres[0].commit_hash
-    msg.last_commit_date = date_toiso(qres[-1].authored)
-    msg.last_commit_hash = qres[-1].commit_hash
+    if len(qres) == 0:
+        msg.repo_id = repo_id
+        msg.yearmo = yearmo
+        return msg
+
+    msg.repo_id = repo_id
+    msg.yearmo = yearmo
+    
+    current_yrmo = ''
+    for item in qres:
+
+        if item.yearmo != current_yrmo:
+            current_yrmo = item.yearmo
+            
+            isodt = msg.isodates.add()
+            isodt.yearmo = current_yrmo
+            isodt.commit_hash = item.commit_hash
+
+            isoyr, isowk, isody = item.authored.isocalendar()
+            isodt.iso_week = isowk
+            isodt.iso_year = isoyr
 
     return msg
-    
 
-
-    
-
-    
+def msg_repository_metric(dal: DataAccessLayer, repo_id: str, yearmo: str):
+    msg = okra_api_pb2.RepositoryMetric()
 
     
-    
-
-
 
 
 def tbl_repository_metrics(dburl: str, rd: list, pqcache: str, name='repo_metrics'):
