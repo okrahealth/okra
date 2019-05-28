@@ -41,6 +41,8 @@ class TestMgmtApi(unittest.TestCase):
     def test_msg_repository_metric(self):
         pass
 
+    def test_msg_iso_date_aggregation(self):
+        pass
 
     def test_total_number_of_contributors_by_project(self):
         result = total_number_of_contributors_by_project("Tyler",

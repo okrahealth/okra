@@ -63,7 +63,34 @@ def msg_repository_info(dal: DataAccessLayer, repo_id: str, yearmo: str):
 def msg_repository_metric(dal: DataAccessLayer, repo_id: str, yearmo: str):
     msg = okra_api_pb2.RepositoryMetric()
 
-    
+def msg_iso_date_aggregation(dal: DataAccessLayer, yearmo: str, commit_hash: str, iso_week: int, iso_year: int, status: str):
+    msg = okra_api_pb2.IsoDateAggregation()
+
+    q = dal.session.query(
+        Meta.yearmo, Contrib.commit_hash
+    ).join(Contrib).filter(Meta.yearmo == yearmo)
+
+    qres = q.all()
+
+    if len(qres) == 0:
+        msg.yearmo = yearmo
+        msg.commit_hash = commit_hash
+        msg.iso_week = iso_week
+        msg.iso_year = iso_year
+        msg.status = status
+        return msg
+
+    for item in qres:
+
+        if item.yearmo != current_yrmo:
+            current_yrmo = item.yearmo
+            isodt = msg.isodates.add()
+            isodt.yearmo = current_yrmo
+            isodt.commit_hash = item.commit_hash
+
+            isoyr, isowk, isody = item.authored.isocalendar()
+            isodt.iso_week = isowk
+            isodt.iso_year = isoyr
 
 
 def tbl_repository_metrics(dburl: str, rd: list, pqcache: str, name='repo_metrics'):
