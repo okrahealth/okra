@@ -25,6 +25,21 @@ logger = logging.getLogger(__name__)
 def date_toiso(datetime, timespec='minutes'):
     return datetime.isoformat(timespec=timespec)
 
+def msg_iso_date_aggregation(msg, item, status: str, yearmo: str):
+    """ Compute IsoDateAggregation message """
+
+    isodt = msg.isodates.add()
+    isodt.yearmo = yearmo
+    isodt.commit_hash = item.commit_hash
+
+    isoyr, isowk, isody = item.authored.isocalendar()
+
+    isodt.iso_week = isowk
+    isodt.iso_year = isoyr
+    isodt.status = status
+
+    return msg  
+
 def msg_repository_info(dal: DataAccessLayer, repo_id: str, yearmo: str):
     """ Compute RepositoryInfo message """
 
@@ -43,20 +58,16 @@ def msg_repository_info(dal: DataAccessLayer, repo_id: str, yearmo: str):
 
     msg.repo_id = repo_id
     msg.yearmo = yearmo
-    
-    current_yrmo = ''
-    for item in qres:
 
-        if item.yearmo != current_yrmo:
-            current_yrmo = item.yearmo
-            
-            isodt = msg.isodates.add()
-            isodt.yearmo = current_yrmo
-            isodt.commit_hash = item.commit_hash
+    # Set up iso dates (first, last)
 
-            isoyr, isowk, isody = item.authored.isocalendar()
-            isodt.iso_week = isowk
-            isodt.iso_year = isoyr
+    first = qres[0]
+    last = qres[-1]
+
+    msg = msg_iso_date_aggregation(msg, item=first, status='first',
+                                   yearmo=yearmo)
+    msg = msg_iso_date_aggregation(msg, item=last, status='last',
+                                   yearmo=yearmo)
 
     return msg
 

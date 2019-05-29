@@ -31,12 +31,15 @@ class TestMgmtApi(unittest.TestCase):
         assert out.repo_id == 'Tyler/okra'
         assert out.yearmo == '2017-06'
 
-        assert len(out.isodates) == 1
+        assert len(out.isodates) == 2
         assert out.isodates[0].yearmo == '2017-06'
         assert out.isodates[0].commit_hash == '5'
         assert out.isodates[0].iso_week == 22
         assert out.isodates[0].iso_year == 2017
-        assert out.isodates[0].status == ''
+        assert out.isodates[0].status == 'first'
+
+        assert out.isodates[1].commit_hash == '5'
+        assert out.isodates[1].status == 'last'
 
     def test_msg_repository_metric(self):
         pass
