@@ -3,7 +3,7 @@ import unittest
 
 from okra.models import DataAccessLayer
 from okra.assn4 import total_number_of_contributors_by_project
-from okra.mgmt_api import msg_repository_info
+from okra.mgmt_api import msg_repository_info, msg_repository_metric
 
 from .mock_db import mock_github_project_db
 
@@ -20,19 +20,21 @@ class TestMgmtApi(unittest.TestCase):
 
     def setUp(self):
         self.dal.session = self.dal.Session()
+        self.repo_id = 'Tyler/okra'
+        self.yearmo = '2017-06'
         
     def tearDown(self):
         self.dal.session.rollback()
         self.dal.session.close()
 
     def test_msg_repository_info(self):
-        out = msg_repository_info(self.dal, 'Tyler/okra', '2017-06')
+        out = msg_repository_info(self.dal, self.repo_id, self.yearmo)
 
-        assert out.repo_id == 'Tyler/okra'
-        assert out.yearmo == '2017-06'
+        assert out.repo_id == self.repo_id
+        assert out.yearmo == self.yearmo
 
         assert len(out.isodates) == 2
-        assert out.isodates[0].yearmo == '2017-06'
+        assert out.isodates[0].yearmo == self.yearmo
         assert out.isodates[0].commit_hash == '5'
         assert out.isodates[0].iso_week == 22
         assert out.isodates[0].iso_year == 2017
@@ -42,7 +44,33 @@ class TestMgmtApi(unittest.TestCase):
         assert out.isodates[1].status == 'last'
 
     def test_msg_repository_metric(self):
-        pass
+        out = msg_repository_metric(self.dal, self.repo_id, self.yearmo)
+
+        # Meta info
+        
+        assert out.repo_id == self.repo_id
+        assert out.yearmo == self.yearmo
+
+        # IsoDateAggregation
+        
+        assert len(out.isodates) == 2
+        assert out.isodates[0].yearmo == self.yearmo
+        assert out.isodates[0].commit_hash == '5'
+        assert out.isodates[0].iso_week == 22
+
+        # Author
+
+        assert out.author_count == 1
+
+        # Contrib
+
+        assert out.contrib_count == 1
+
+        # File metrics
+
+        
+
+        # Truck factor
 
 
     def test_total_number_of_contributors_by_project(self):

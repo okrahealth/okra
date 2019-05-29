@@ -12,11 +12,12 @@ import logging
 from urllib.parse import urljoin
 
 import pandas as pd
+from sqlalchemy import func
 
 from okra.assn4 import (get_truck_factor_by_project,
                         total_number_of_files_by_project,
                         total_number_of_contributors_by_project)
-from okra.models import DataAccessLayer, Author, Meta
+from okra.models import DataAccessLayer, Author, Meta, Contrib
 from okra.proto import okra_api_pb2
 
 
@@ -53,7 +54,7 @@ def msg_repository_info(dal: DataAccessLayer, repo_id: str, yearmo: str):
 
     q = dal.session.query(
         Meta.yearmo, Author.commit_hash, Author.authored
-    ).join(Author).filter(Meta.yearmo == yearmo).order_by(Author.authored)
+    ).join(Author).filter(Meta.yearmo == yearmo)
 
     qres = q.all()
 
@@ -78,10 +79,48 @@ def msg_repository_info(dal: DataAccessLayer, repo_id: str, yearmo: str):
     return msg
 
 def msg_repository_metric(dal: DataAccessLayer, repo_id: str, yearmo: str):
+    
     msg = okra_api_pb2.RepositoryMetric()
 
-    
+    msg.repo_id = repo_id
+    msg.yearmo = yearmo
 
+    # IsoDataAggregation
+
+    q1 = dal.session.query(
+        Meta.commit_hash, Meta.yearmo, Author.authored
+    ).join(Author).filter(Meta.yearmo == yearmo)
+
+    qres1 = q1.all()
+
+    if len(qres1) == 0:
+        return msg
+
+    first = qres1[0]
+    last = qres1[-1]
+
+    msg = msg_iso_date_aggregation(msg, first, status='first', yearmo=yearmo)
+    msg = msg_iso_date_aggregation(msg, last, status='last', yearmo=yearmo)
+
+    # Author count
+
+    q2 = dal.session.query(
+        Meta.commit_hash, Meta.yearmo, Author.name, Author.email
+    ).join(Author).filter(Meta.yearmo == yearmo)
+
+    msg.author_count = q2.count()
+    
+    # Contributor count
+
+    q3 = dal.session.query(
+        Meta.commit_hash, Meta.yearmo, Contrib.name, Contrib.email
+    ).join(Contrib).filter(Meta.yearmo == yearmo)
+
+    msg.contrib_count = q3.count()
+
+    # File level metrics
+
+    return msg
 
 def tbl_repository_metrics(dburl: str, rd: list, pqcache: str, name='repo_metrics'):
     """ RepositoryMetrics table 
