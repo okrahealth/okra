@@ -41,7 +41,13 @@ def msg_iso_date_aggregation(msg, item, status: str, yearmo: str):
     return msg  
 
 def msg_repository_info(dal: DataAccessLayer, repo_id: str, yearmo: str):
-    """ Compute RepositoryInfo message """
+    """ Compute RepositoryInfo message 
+
+    Note that default behavior for first/last msg_iso_date_aggregation()
+    is to use the same msg item for IsoDateAggregation if only one msg
+    item exists for a given yearmo. An empty message except for repo_id
+    and yearmo will be returned if no commits exist for a given yearmo.
+    """
 
     msg = okra_api_pb2.RepositoryInfo()
 
