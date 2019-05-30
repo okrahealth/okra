@@ -122,7 +122,7 @@ def repo_to_objects(repo_name: str, cache: str, last_commit=""):
             commit_hash=fobj.hash_val,
             modified_file=fobj.file_path,
             lines_added=make_digit(fobj.added, "fobj.added"),
-            lines_deleted=make_digit(fobj.deleted, "fobj.deleted")
+            lines_subtracted=make_digit(fobj.deleted, "fobj.deleted")
         )
         yield cf_item
 

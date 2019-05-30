@@ -124,7 +124,7 @@ def msg_repository_metric(dal: DataAccessLayer, repo_id: str, yearmo: str):
         Meta.yearmo,
         func.count(CommitFile.modified_file).label('file_count'),
         func.sum(CommitFile.lines_added).label('lines_added'),
-        func.sum(CommitFile.lines_deleted).label('lines_subtracted')
+        func.sum(CommitFile.lines_subtracted).label('lines_subtracted')
     ).join(CommitFile).filter(Meta.yearmo == yearmo).group_by(Meta.yearmo)
 
     qres4 = q4.first() # Should only be one yearmo

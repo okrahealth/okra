@@ -72,39 +72,39 @@ def mock_commit_file(session):
         # commit hash '1'
         
         CommitFile(file_id=1, commit_hash="1", modified_file="a1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
         CommitFile(file_id=2, commit_hash="1", modified_file="b1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
         CommitFile(file_id=3, commit_hash="1", modified_file="c1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
 
         # commit hash '2'
 
         CommitFile(file_id=4, commit_hash="2", modified_file="a1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
         CommitFile(file_id=5, commit_hash="2", modified_file="b1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
 
         # commit hash '3'
 
         CommitFile(file_id=6, commit_hash="3", modified_file="d1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
         CommitFile(file_id=7, commit_hash="3", modified_file="e1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
 
         # commit hash '4'
 
         CommitFile(file_id=8, commit_hash="4", modified_file="f1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
         CommitFile(file_id=9, commit_hash="4", modified_file="g1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
 
         # commit hash '5'
         
         CommitFile(file_id=10, commit_hash="5", modified_file="h1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
         CommitFile(file_id=11, commit_hash="5", modified_file="i1.R",
-                   lines_added=20, lines_deleted=0),
+                   lines_added=20, lines_subtracted=0),
 
     ]
 

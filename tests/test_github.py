@@ -84,5 +84,5 @@ class TestGithub(unittest.TestCase):
         assert r5.commit_hash == 'b6ca6229284e18b0ce8defeb4b240aa2f26223b4'
         assert r5.modified_file == 'friends.py'
         assert r5.lines_added == 2
-        assert r5.lines_deleted == 0
+        assert r5.lines_subtracted == 0
 

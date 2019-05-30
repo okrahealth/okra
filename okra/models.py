@@ -68,7 +68,7 @@ class CommitFile(Base):
                          nullable=False,primary_key=True)
     modified_file = Column('modified_file', String(500), nullable=False)
     lines_added = Column('lines_added', Integer, nullable=False)
-    lines_deleted = Column('lines_subtracted', Integer, nullable=False)
+    lines_subtracted = Column('lines_subtracted', Integer, nullable=False)
 
 class Info(Base):
     __tablename__ = 'info'

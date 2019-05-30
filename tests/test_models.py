@@ -1,4 +1,4 @@
-""" Validating function data models 
+""" Validating function data models
 
 Trying to do simple things with the data access layer to make
 sure it doesn't break before doing more interesting things.
@@ -38,7 +38,7 @@ def mock_db(session):
                      commit_hash=commit_hash,
                      modified_file="/foo/bar/yup.txt",
                      lines_added=0,
-                     lines_deleted=42)
+                     lines_subtracted=42)
 
     ci1 = Info(commit_hash=commit_hash,
               subject="Long strange trip",
@@ -121,7 +121,7 @@ class TestModels(unittest.TestCase):
         query = self.dal.session.\
             query(Meta.commit_hash, Meta.owner_name, Meta.project_name,
                   CommitFile.modified_file, CommitFile.lines_added,
-                  CommitFile.lines_deleted, Info.subject)
+                  CommitFile.lines_subtracted, Info.subject)
 
         query = query.join(CommitFile).join(Info)
         results = query.all()
