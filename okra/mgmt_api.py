@@ -17,7 +17,7 @@ from sqlalchemy import func
 from okra.assn4 import (get_truck_factor_by_project,
                         total_number_of_files_by_project,
                         total_number_of_contributors_by_project)
-from okra.models import DataAccessLayer, Author, Meta, Contrib
+from okra.models import DataAccessLayer, Author, Meta, Contrib, CommitFile
 from okra.proto import okra_api_pb2
 
 
@@ -119,6 +119,18 @@ def msg_repository_metric(dal: DataAccessLayer, repo_id: str, yearmo: str):
     msg.contrib_count = q3.count()
 
     # File level metrics
+
+    q4 = dal.session.query(
+        Meta.yearmo,
+        func.count(CommitFile.modified_file).label('file_count'),
+        func.sum(CommitFile.lines_added).label('lines_added'),
+        func.sum(CommitFile.lines_deleted).label('lines_subtracted')
+    ).join(CommitFile).filter(Meta.yearmo == yearmo).group_by(Meta.yearmo)
+
+    qres4 = q4.first() # Should only be one yearmo
+    msg.file_count = qres4.file_count
+    msg.lines_added = qres4.lines_added
+    msg.lines_subtracted = qres4.lines_subtracted
 
     return msg
 

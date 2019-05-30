@@ -68,9 +68,13 @@ class TestMgmtApi(unittest.TestCase):
 
         # File metrics
 
-        
+        assert out.file_count == 2
+        assert out.lines_added == 40
+        assert out.lines_subtracted == 0
 
         # Truck factor
+
+        
 
 
     def test_total_number_of_contributors_by_project(self):
