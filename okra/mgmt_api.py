@@ -1,8 +1,5 @@
 """ Generate tables for the Okra-API management command
 
-Strategy here is to check a directory for updates, then 
-consolidate those into parquet files with datetime in file
-name. Those parquet files are then uploaded into the Okra API.
 
 Metrics are targeting the 'proto/okra_api.proto' interface.
 """
@@ -11,7 +8,6 @@ import os
 import logging
 from urllib.parse import urljoin
 
-import pandas as pd
 from sqlalchemy import func
 
 from okra.assn4 import (get_truck_factor_by_project,
