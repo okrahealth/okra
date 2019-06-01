@@ -25,7 +25,9 @@ def iso_date_aggregation(dal: DataAccessLayer, yearmo=''):
         ).join(Contrib).filter(Meta.yearmo == yearmo)
         return q.all()
 
-    q = dal.session.query(Meta.commit_hash,Contrib.contributed).join(Contrib)
+    q = dal.session.query(
+        Meta.commit_hash, Meta.yearmo, Contrib.contributed
+    ).join(Contrib)
     return q.all()
 
 def find_author_count(dal: DataAccessLayer, yearmo=''):
@@ -64,24 +66,17 @@ def find_file_metrics(dal: DataAccessLayer, yearmo=''):
         return q.first()
 
     q = dal.session.query(
+        Meta.project_name,
         Meta.yearmo,
         func.count(CommitFile.modified_file).label('file_count'),
         func.sum(CommitFile.lines_added).label('lines_added'),
         func.sum(CommitFile.lines_subtracted).label('lines_subtracted')
-    ).join(CommitFile).group_by(Meta.yearmo)
+    ).join(CommitFile).group_by(Meta.project_name)
     return q.first()
 
-
-
-    
-
-
-    
-    
-
-    
-
-    
-
-    
-
+def hist_start_yearmo(dal: DataAccessLayer):
+    """ Start yearmo """
+    q = dal.session.query(
+        Meta.yearmo, Author.authored
+        ).join(Author)
+    return q.first()

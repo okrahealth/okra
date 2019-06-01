@@ -23,7 +23,8 @@ from okra.proto import okra_api_pb2
 from okra.repository_metrics import (repo_info, iso_date_aggregation,
                                      find_author_count,
                                      find_contributor_count,
-                                     find_file_metrics)
+                                     find_file_metrics,
+                                     hist_start_yearmo)
 
 logger = logging.getLogger(__name__)
 
@@ -125,5 +126,45 @@ def msg_repo_history_metric(dal: DataAccessLayer, repo_id: str, yearmo: str):
 
     msg.repo_id = repo_id
     msg.current_yearmo = yearmo
+
+    # IsoDataAggregation
+        
+    qres1 = iso_date_aggregation(dal)
+
+    if len(qres1) == 0:
+        return msg
+
+    first = qres1[0]
+    last = qres1[-1]
+
+    msg = msg_iso_date_aggregation(msg, first, status='first',
+                                   yearmo=first.yearmo)
+    msg = msg_iso_date_aggregation(msg, last, status='last',
+                                   yearmo=last.yearmo)
+
+    # Find start yearmo
+
+    msg.start_yearmo = first.yearmo
+
+    # Find last commit info
+
+    msg.last_commit_yearmo = last.yearmo
+    msg.last_commit_hash = last.commit_hash
+
+    # Total lines added/subtracted
+
+    fimet = find_file_metrics(dal)
+    msg.total_lines_added = fimet.lines_added
+    msg.total_lines_subtracted = fimet.lines_subtracted
+
+    # Total truck factor
+
+    member_count, members = get_bus_factor(dal)
+    msg.total_truck_factor = member_count
+
+    # Total days in project
+
+    time_elapsed = last.contributed - first.contributed
+    msg.total_days = time_elapsed.days
 
     return msg

@@ -23,6 +23,7 @@ class TestMgmtApi(unittest.TestCase):
         self.dal.session = self.dal.Session()
         self.repo_id = 'Tyler/okra'
         self.yearmo = '2017-06'
+        self.start_yearmo = '2015-01'
         
     def tearDown(self):
         self.dal.session.rollback()
@@ -82,3 +83,36 @@ class TestMgmtApi(unittest.TestCase):
 
         assert out.repo_id == self.repo_id
         assert out.current_yearmo == self.yearmo
+        assert out.start_yearmo == self.start_yearmo
+        
+        # IsoDateAggregation
+        
+        assert len(out.isodates) == 2
+        assert out.isodates[0].yearmo == self.start_yearmo
+        assert out.isodates[0].commit_hash == '1'
+        assert out.isodates[0].iso_week == 1
+        
+        assert out.isodates[1].yearmo == self.yearmo
+        assert out.isodates[1].commit_hash == '5'
+        assert out.isodates[1].iso_week == 22
+
+        # Last commit descriptives
+
+        assert out.last_commit_yearmo == self.yearmo
+        assert out.last_commit_hash == '5'
+
+        # Total aggregates
+
+        assert out.total_lines_added == 220
+        assert out.total_lines_subtracted == 0
+
+        # Total bus factor
+
+        assert out.total_truck_factor == 2
+
+        # Total days in project
+
+        assert out.total_days == 882
+
+        
+
