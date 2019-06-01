@@ -12,26 +12,11 @@ from okra.playbooks import retrieve_or_clone
 class TestAssn1Data(unittest.TestCase):
 
     repo_name = "tbonza/tiny_dancer"
+    data_loc = 'tests/data/'
+    repo_path = urljoin(data_loc, repo_name)
+
     total_commits = 4
 
-    @classmethod
-    def setUpClass(cls):
-        cls.tmpdir = tempfile.TemporaryDirectory()
-        cls.repo_path = urljoin(cls.tmpdir.name, cls.repo_name)
-
-    @classmethod
-    def tearDownClass(cls):
-
-        cls.tmpdir.cleanup()
-        if os.path.exists(cls.tmpdir.name):
-            shutil.rmtree(cls.tmpdir.name)
-
-        #if os.path.exists(cls.repo_path):
-        #    shutil.rmtree(cls.repo_path)
-        # caching repo path for time being, faster tests, less network
-
-    def setUp(self):
-        retrieve_or_clone(self.repo_name, self.tmpdir.name)
 
     def test_parse_commits(self):
         

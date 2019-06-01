@@ -6,112 +6,13 @@ works.
 from datetime import datetime
 import unittest
 
-from okra.models import (DataAccessLayer, Meta, Author, Contrib,
-                         CommitFile, Info)
+from okra.models import (DataAccessLayer)
 from okra.assn4 import (total_number_of_files_by_project,
+                        total_number_of_contributors_by_project,
                         author_file_owned, author_number_of_files_owned,
                         smallest_owner_set,
                         get_truck_factor_by_project)
-
-def mock_github_project_db(session):
-    """ 
-    Mock up a database that can be used to compute the truck factor
-    of a project.
-    """
-
-    meta_commits = [
-        Meta(commit_hash="1", owner_name="Tyler", project_name="okra"),
-        Meta(commit_hash="2", owner_name="Tyler", project_name="okra"),
-        Meta(commit_hash="3", owner_name="Tyler", project_name="okra"),
-        Meta(commit_hash="4", owner_name="Tyler", project_name="okra"),
-        Meta(commit_hash="5", owner_name="Tyler", project_name="okra"),
-    ]
-    
-    session.bulk_save_objects(meta_commits)
-    session.commit()
-
-    author_commits = [
-        Author(commit_hash="1", name="Tyler", authored=datetime.now()),
-        Author(commit_hash="2", name="Tyler", authored=datetime.now()),
-        Author(commit_hash="3", name="Chaitya", authored=datetime.now()),
-        Author(commit_hash="4", name="Angela", authored=datetime.now()),
-        Author(commit_hash="5", name="Chris", authored=datetime.now()),
-    ]
-
-    session.bulk_save_objects(author_commits)
-    session.commit()
-
-    contrib_commits = [
-        Contrib(contrib_id=1, commit_hash="1",
-                name="Tyler", contributed=datetime.now()),
-        Contrib(contrib_id=2, commit_hash="1",
-                name="Diego", contributed=datetime.now()),
-        Contrib(contrib_id=3, commit_hash="2",
-                name="Tyler", contributed=datetime.now()),
-        Contrib(contrib_id=4, commit_hash="3",
-                name="Chaitya", contributed=datetime.now()),
-        Contrib(contrib_id=5, commit_hash="4",
-                name="Angela", contributed=datetime.now()),
-        Contrib(contrib_id=6, commit_hash="5",
-                name="Chris", contributed=datetime.now()),
-    ] # note that truck factor will exclude multiple contributors
-
-    session.bulk_save_objects(contrib_commits)
-    session.commit()
-
-    commit_files = [
-        
-        # commit hash '1'
-        
-        CommitFile(file_id=1, commit_hash="1", modified_file="a1.R",
-                   lines_added=20, lines_deleted=0),
-        CommitFile(file_id=2, commit_hash="1", modified_file="b1.R",
-                   lines_added=20, lines_deleted=0),
-        CommitFile(file_id=3, commit_hash="1", modified_file="c1.R",
-                   lines_added=20, lines_deleted=0),
-
-        # commit hash '2'
-
-        CommitFile(file_id=4, commit_hash="2", modified_file="a1.R",
-                   lines_added=20, lines_deleted=0),
-        CommitFile(file_id=5, commit_hash="2", modified_file="b1.R",
-                   lines_added=20, lines_deleted=0),
-
-        # commit hash '3'
-
-        CommitFile(file_id=6, commit_hash="3", modified_file="d1.R",
-                   lines_added=20, lines_deleted=0),
-        CommitFile(file_id=7, commit_hash="3", modified_file="e1.R",
-                   lines_added=20, lines_deleted=0),
-
-        # commit hash '4'
-
-        CommitFile(file_id=8, commit_hash="4", modified_file="f1.R",
-                   lines_added=20, lines_deleted=0),
-        CommitFile(file_id=9, commit_hash="4", modified_file="g1.R",
-                   lines_added=20, lines_deleted=0),
-
-        # commit hash '5'
-        
-        CommitFile(file_id=10, commit_hash="5", modified_file="h1.R",
-                   lines_added=20, lines_deleted=0),
-        CommitFile(file_id=11, commit_hash="5", modified_file="i1.R",
-                   lines_added=20, lines_deleted=0),
-    ]
-
-    session.bulk_save_objects(commit_files)
-    session.commit()
-
-    commit_info = [
-        Info(commit_hash="1", created=datetime.now()),
-        Info(commit_hash="2", created=datetime.now()),
-        Info(commit_hash="3", created=datetime.now()),
-        Info(commit_hash="4", created=datetime.now()),
-        Info(commit_hash="5", created=datetime.now()),
-    ]
-
-    session.bulk_save_objects(commit_info)
-    session.commit()
+from .mock_db import mock_github_project_db
 
 
 class TestAssn4(unittest.TestCase):

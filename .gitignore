@@ -19,10 +19,8 @@ oenv
 *.aux
 *.bbl
 *.out
-<<<<<<< HEAD
-build
-=======
 build
 .eggs
 *.egg-info
->>>>>>> 5e1bbe4... update gitignore, removed eggs
+dist/
+.Python
