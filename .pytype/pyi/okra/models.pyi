@@ -66,3 +66,4 @@ class Meta(Any):
     commit_hash: Any
     owner_name: Any
     project_name: Any
+    yearmo: Any

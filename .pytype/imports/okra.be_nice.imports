@@ -4,7 +4,8 @@ sqlalchemy/ext/declarative/__init__ /Users/tylerbrown/projects/okra/.pytype/impo
 sqlalchemy/orm/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 sqlalchemy/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 okra/models /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi
-okra/protobuf/assn1_pb2 /Users/tylerbrown/projects/okra/.pytype/pyi/okra/protobuf/assn1_pb2.pyi
+rfc3339 /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
+okra/proto/assn1_pb2 /Users/tylerbrown/projects/okra/.pytype/pyi/okra/proto/assn1_pb2.pyi
 okra/gitlogs /Users/tylerbrown/projects/okra/.pytype/pyi/okra/gitlogs.pyi
 okra/github /Users/tylerbrown/projects/okra/.pytype/pyi/okra/github.pyi
 okra/populate_db /Users/tylerbrown/projects/okra/.pytype/pyi/okra/populate_db.pyi

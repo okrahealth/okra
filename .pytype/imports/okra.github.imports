@@ -1,8 +1,9 @@
+rfc3339 /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 okra/error_handling /Users/tylerbrown/projects/okra/.pytype/pyi/okra/error_handling.pyi
 sqlalchemy/ext/declarative/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 sqlalchemy/orm/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 sqlalchemy/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 okra/models /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi
 okra/repo_mgmt /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repo_mgmt.pyi
-okra/protobuf/assn1_pb2 /Users/tylerbrown/projects/okra/.pytype/pyi/okra/protobuf/assn1_pb2.pyi
+okra/proto/assn1_pb2 /Users/tylerbrown/projects/okra/.pytype/pyi/okra/proto/assn1_pb2.pyi
 okra/gitlogs /Users/tylerbrown/projects/okra/.pytype/pyi/okra/gitlogs.pyi

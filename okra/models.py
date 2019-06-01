@@ -33,6 +33,7 @@ class Meta(Base):
                          index=True)
     owner_name = Column('owner_name', String(100), nullable=False)
     project_name = Column('project_name', String(150), nullable=False)
+    yearmo = Column('year_mo', String(7), nullable=False)
 
 class Author(Base):
     """ 
@@ -67,7 +68,7 @@ class CommitFile(Base):
                          nullable=False,primary_key=True)
     modified_file = Column('modified_file', String(500), nullable=False)
     lines_added = Column('lines_added', Integer, nullable=False)
-    lines_deleted = Column('lines_subtracted', Integer, nullable=False)
+    lines_subtracted = Column('lines_subtracted', Integer, nullable=False)
 
 class Info(Base):
     __tablename__ = 'info'

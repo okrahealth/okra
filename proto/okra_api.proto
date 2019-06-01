@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package okra.v1;
+
+/* This interface is intended to mirror the Okra-API models.
+ * Okra-API consumes output from Okra using a batch process
+ * so gRPC is not necessary.
+ *
+ * We do need to agree on an appropriate aggregation level
+ * for metrics. The user can move up from this base aggregation
+ * level but not deaggregate. We'll be using month for now
+ * because the minimum aggregation is 30 days. Our metrics
+ * need to be set up as composable abstractions so a user
+ * can easily compute the same aggregations at 60 and 90
+ * days.
+ */
+
+// Date included in aggregation using ISO formatting
+message IsoDateAggregation {
+  string yearmo = 1;
+  string commit_hash = 2;
+  int32 iso_week = 3;
+  int32 iso_year = 4;
+  string status = 5;
+}
+
+// Repository metrics for the entire history
+message RepositoryHistoryMetric {
+  string repo_id = 1;
+  string start_yearmo = 2;
+  string current_yearmo = 3;
+  repeated IsoDateAggregation isodates = 4;
+  string last_commit_yearmo = 5;
+  string last_commit_hash = 6;
+  int32 total_lines_added = 7;
+  int32 total_lines_subtracted = 8;
+  int32 total_truck_factor = 9;
+  float total_days = 10;
+}
+
+// Repository metrics for each month in iso-format
+message RepositoryMetric {
+  string repo_id = 1;
+  string yearmo = 2;
+  repeated IsoDateAggregation isodates = 3;
+  int32 author_count = 4;
+  int32 contrib_count = 5;
+  int32 file_count = 6;
+  int32 lines_added = 7;
+  int32 lines_subtracted = 8;
+  int32 truck_factor = 9;
+}
+
+// Repository, basic stats, yearmo aggregation
+message RepositoryInfo {
+  string repo_id = 1;
+  string yearmo = 2;
+  repeated IsoDateAggregation isodates = 3;
+}
