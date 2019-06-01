@@ -16,7 +16,6 @@ logger: logging.Logger
 logging: module
 okra_api_pb2: module
 os: module
-pd: module
 
 AnyStr = TypeVar('AnyStr', str, bytes)
 _T0 = TypeVar('_T0')
