@@ -2,9 +2,10 @@ from setuptools import setup, find_packages
 
 setup(
     name='okra',
-    version='1.2dev2',
+    version='1.3dev0',
     packages=["okra", "okra/proto"],
     license='MIT',
+    long_description_content_type="text/markdown",
     long_description=open('README.md').read(),
     python_requires=">=3.6",
     install_requires=[
