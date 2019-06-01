@@ -35,7 +35,8 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Developer Interface" href="api.html" /> 
+    <link rel="next" title="Developer Interface" href="api.html" />
+    <link rel="prev" title="Welcome to okra’s documentation!" href="index.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -83,14 +84,15 @@
               
             
             
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="api.html">Developer Interface</a></li>
-</ul>
-<ul class="current">
+              <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Applications</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-okra.mgmt_api">Okra API Batch Job</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-okra.assn4">Truck Factor</a></li>
 </ul>
 </li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Developer Interface</a></li>
 </ul>
 
             
@@ -159,6 +161,30 @@
 <span id="apps"></span><h1>Applications<a class="headerlink" href="#applications" title="Permalink to this headline">¶</a></h1>
 <p>We’ve had to implement applications for homework
 and a class project. They are included here.</p>
+<div class="section" id="module-okra.mgmt_api">
+<span id="okra-api-batch-job"></span><h2>Okra API Batch Job<a class="headerlink" href="#module-okra.mgmt_api" title="Permalink to this headline">¶</a></h2>
+<p>Generate tables for the Okra-API management command</p>
+<p>Strategy here is to check a directory for updates, then 
+consolidate those into parquet files with datetime in file
+name. Those parquet files are then uploaded into the Okra API.</p>
+<p>Metrics are targeting the ‘proto/okra_api.proto’ interface.</p>
+<dl class="function">
+<dt id="okra.mgmt_api.msg_iso_date_aggregation">
+<code class="descclassname">okra.mgmt_api.</code><code class="descname">msg_iso_date_aggregation</code><span class="sig-paren">(</span><em>msg</em>, <em>item</em>, <em>status: str</em>, <em>yearmo: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/mgmt_api.html#msg_iso_date_aggregation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.mgmt_api.msg_iso_date_aggregation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute IsoDateAggregation message</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="okra.mgmt_api.msg_repository_info">
+<code class="descclassname">okra.mgmt_api.</code><code class="descname">msg_repository_info</code><span class="sig-paren">(</span><em>dal: okra.models.DataAccessLayer</em>, <em>repo_id: str</em>, <em>yearmo: str</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/mgmt_api.html#msg_repository_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.mgmt_api.msg_repository_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute RepositoryInfo message</p>
+<p>Note that default behavior for first/last msg_iso_date_aggregation()
+is to use the same msg item for IsoDateAggregation if only one msg
+item exists for a given yearmo. An empty message except for repo_id
+and yearmo will be returned if no commits exist for a given yearmo.</p>
+</dd></dl>
+
+</div>
 <div class="section" id="module-okra.assn4">
 <span id="truck-factor"></span><h2>Truck Factor<a class="headerlink" href="#module-okra.assn4" title="Permalink to this headline">¶</a></h2>
 <p>Compute Truck Factor</p>
@@ -260,6 +286,27 @@ of users such that they own more than half of the files in the project</p></li>
 </dd></dl>
 
 <dl class="function">
+<dt id="okra.assn4.total_number_of_contributors_by_project">
+<code class="descclassname">okra.assn4.</code><code class="descname">total_number_of_contributors_by_project</code><span class="sig-paren">(</span><em>owner</em>, <em>project</em>, <em>dal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/assn4.html#total_number_of_contributors_by_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.assn4.total_number_of_contributors_by_project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the total number of contributors by project.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>owner</strong> – name of owner</p></li>
+<li><p><strong>project</strong> – name of project</p></li>
+<li><p><strong>dal</strong> – okra.models.DataAccessLayer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the total number of contributors in a project</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="okra.assn4.total_number_of_files_by_project">
 <code class="descclassname">okra.assn4.</code><code class="descname">total_number_of_files_by_project</code><span class="sig-paren">(</span><em>owner</em>, <em>project</em>, <em>dal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/okra/assn4.html#total_number_of_files_by_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#okra.assn4.total_number_of_files_by_project" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the total number of files by project.</p>
@@ -291,8 +338,10 @@ of users such that they own more than half of the files in the project</p></li>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
+        <a href="api.html" class="btn btn-neutral float-right" title="Developer Interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
-        <a href="api.html" class="btn btn-neutral float-left" title="Developer Interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to okra’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

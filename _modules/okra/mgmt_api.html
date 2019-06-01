@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>okra.mgmt_api &mdash; &#39;okra&#39; 1.0.18 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> 'okra'
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../apps.html">Applications</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Developer Interface</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">'okra'</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>okra.mgmt_api</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for okra.mgmt_api</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Generate tables for the Okra-API management command</span>
+
+<span class="sd">Strategy here is to check a directory for updates, then </span>
+<span class="sd">consolidate those into parquet files with datetime in file</span>
+<span class="sd">name. Those parquet files are then uploaded into the Okra API.</span>
+
+<span class="sd">Metrics are targeting the &#39;proto/okra_api.proto&#39; interface.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="k">import</span> <span class="n">datetime</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">urllib.parse</span> <span class="k">import</span> <span class="n">urljoin</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="k">import</span> <span class="n">func</span>
+
+<span class="kn">from</span> <span class="nn">okra.assn4</span> <span class="k">import</span> <span class="p">(</span><span class="n">get_truck_factor_by_project</span><span class="p">,</span>
+                        <span class="n">total_number_of_files_by_project</span><span class="p">,</span>
+                        <span class="n">total_number_of_contributors_by_project</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">okra.bus_factor</span> <span class="k">import</span> <span class="n">get_bus_factor</span>
+<span class="kn">from</span> <span class="nn">okra.models</span> <span class="k">import</span> <span class="n">DataAccessLayer</span><span class="p">,</span> <span class="n">Author</span><span class="p">,</span> <span class="n">Meta</span><span class="p">,</span> <span class="n">Contrib</span><span class="p">,</span> <span class="n">CommitFile</span>
+<span class="kn">from</span> <span class="nn">okra.proto</span> <span class="k">import</span> <span class="n">okra_api_pb2</span>
+<span class="kn">from</span> <span class="nn">okra.repository_metrics</span> <span class="k">import</span> <span class="p">(</span><span class="n">repo_info</span><span class="p">,</span> <span class="n">iso_date_aggregation</span><span class="p">,</span>
+                                     <span class="n">find_author_count</span><span class="p">,</span>
+                                     <span class="n">find_contributor_count</span><span class="p">,</span>
+                                     <span class="n">find_file_metrics</span><span class="p">,</span>
+                                     <span class="n">hist_start_yearmo</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">date_toiso</span><span class="p">(</span><span class="n">datetime</span><span class="p">,</span> <span class="n">timespec</span><span class="o">=</span><span class="s1">&#39;minutes&#39;</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(</span><span class="n">timespec</span><span class="o">=</span><span class="n">timespec</span><span class="p">)</span>
+
+<div class="viewcode-block" id="msg_iso_date_aggregation"><a class="viewcode-back" href="../../apps.html#okra.mgmt_api.msg_iso_date_aggregation">[docs]</a><span class="k">def</span> <span class="nf">msg_iso_date_aggregation</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">item</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">yearmo</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Compute IsoDateAggregation message &quot;&quot;&quot;</span>
+
+    <span class="n">isodt</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">isodates</span><span class="o">.</span><span class="n">add</span><span class="p">()</span>
+    <span class="n">isodt</span><span class="o">.</span><span class="n">yearmo</span> <span class="o">=</span> <span class="n">yearmo</span>
+    <span class="n">isodt</span><span class="o">.</span><span class="n">commit_hash</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">commit_hash</span>
+
+    <span class="n">isoyr</span><span class="p">,</span> <span class="n">isowk</span><span class="p">,</span> <span class="n">isody</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">contributed</span><span class="o">.</span><span class="n">isocalendar</span><span class="p">()</span>
+
+    <span class="n">isodt</span><span class="o">.</span><span class="n">iso_week</span> <span class="o">=</span> <span class="n">isowk</span>
+    <span class="n">isodt</span><span class="o">.</span><span class="n">iso_year</span> <span class="o">=</span> <span class="n">isoyr</span>
+    <span class="n">isodt</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status</span>
+
+    <span class="k">return</span> <span class="n">msg</span>  </div>
+
+<div class="viewcode-block" id="msg_repository_info"><a class="viewcode-back" href="../../apps.html#okra.mgmt_api.msg_repository_info">[docs]</a><span class="k">def</span> <span class="nf">msg_repository_info</span><span class="p">(</span><span class="n">dal</span><span class="p">:</span> <span class="n">DataAccessLayer</span><span class="p">,</span> <span class="n">repo_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">yearmo</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Compute RepositoryInfo message </span>
+
+<span class="sd">    Note that default behavior for first/last msg_iso_date_aggregation()</span>
+<span class="sd">    is to use the same msg item for IsoDateAggregation if only one msg</span>
+<span class="sd">    item exists for a given yearmo. An empty message except for repo_id</span>
+<span class="sd">    and yearmo will be returned if no commits exist for a given yearmo.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">okra_api_pb2</span><span class="o">.</span><span class="n">RepositoryInfo</span><span class="p">()</span>
+
+    <span class="n">qres</span> <span class="o">=</span> <span class="n">repo_info</span><span class="p">(</span><span class="n">dal</span><span class="p">,</span> <span class="n">yearmo</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">qres</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">repo_id</span> <span class="o">=</span> <span class="n">repo_id</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">yearmo</span> <span class="o">=</span> <span class="n">yearmo</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="n">msg</span><span class="o">.</span><span class="n">repo_id</span> <span class="o">=</span> <span class="n">repo_id</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">yearmo</span> <span class="o">=</span> <span class="n">yearmo</span>
+
+    <span class="c1"># Set up iso dates (first, last)</span>
+
+    <span class="n">first</span> <span class="o">=</span> <span class="n">qres</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">qres</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">msg_iso_date_aggregation</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">item</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">,</span>
+                                   <span class="n">yearmo</span><span class="o">=</span><span class="n">yearmo</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">msg_iso_date_aggregation</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">item</span><span class="o">=</span><span class="n">last</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;last&#39;</span><span class="p">,</span>
+                                   <span class="n">yearmo</span><span class="o">=</span><span class="n">yearmo</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">msg</span></div>
+
+<span class="k">def</span> <span class="nf">msg_repository_metric</span><span class="p">(</span><span class="n">dal</span><span class="p">:</span> <span class="n">DataAccessLayer</span><span class="p">,</span> <span class="n">repo_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">yearmo</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">okra_api_pb2</span><span class="o">.</span><span class="n">RepositoryMetric</span><span class="p">()</span>
+
+    <span class="n">msg</span><span class="o">.</span><span class="n">repo_id</span> <span class="o">=</span> <span class="n">repo_id</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">yearmo</span> <span class="o">=</span> <span class="n">yearmo</span>
+
+    <span class="c1"># IsoDataAggregation</span>
+
+    <span class="n">qres1</span> <span class="o">=</span> <span class="n">iso_date_aggregation</span><span class="p">(</span><span class="n">dal</span><span class="p">,</span> <span class="n">yearmo</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">qres1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="n">first</span> <span class="o">=</span> <span class="n">qres1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">qres1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">msg_iso_date_aggregation</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">,</span> <span class="n">yearmo</span><span class="o">=</span><span class="n">yearmo</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">msg_iso_date_aggregation</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">last</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;last&#39;</span><span class="p">,</span> <span class="n">yearmo</span><span class="o">=</span><span class="n">yearmo</span><span class="p">)</span>
+
+    <span class="c1"># Author count</span>
+
+    <span class="n">msg</span><span class="o">.</span><span class="n">author_count</span> <span class="o">=</span> <span class="n">find_author_count</span><span class="p">(</span><span class="n">dal</span><span class="p">,</span> <span class="n">yearmo</span><span class="p">)</span>
+    
+    <span class="c1"># Contributor count</span>
+
+    <span class="n">msg</span><span class="o">.</span><span class="n">contrib_count</span> <span class="o">=</span> <span class="n">find_contributor_count</span><span class="p">(</span><span class="n">dal</span><span class="p">,</span> <span class="n">yearmo</span><span class="p">)</span>
+
+    <span class="c1"># File level metrics</span>
+
+    <span class="n">qres4</span> <span class="o">=</span> <span class="n">find_file_metrics</span><span class="p">(</span><span class="n">dal</span><span class="p">,</span> <span class="n">yearmo</span><span class="p">)</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">file_count</span> <span class="o">=</span> <span class="n">qres4</span><span class="o">.</span><span class="n">file_count</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">lines_added</span> <span class="o">=</span> <span class="n">qres4</span><span class="o">.</span><span class="n">lines_added</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">lines_subtracted</span> <span class="o">=</span> <span class="n">qres4</span><span class="o">.</span><span class="n">lines_subtracted</span>
+
+    <span class="c1"># Truck factor</span>
+
+    <span class="n">member_count</span><span class="p">,</span> <span class="n">members</span> <span class="o">=</span> <span class="n">get_bus_factor</span><span class="p">(</span><span class="n">dal</span><span class="p">,</span> <span class="n">yearmo</span><span class="p">)</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">truck_factor</span> <span class="o">=</span> <span class="n">member_count</span>
+
+    <span class="k">return</span> <span class="n">msg</span>
+
+<span class="k">def</span> <span class="nf">msg_repo_history_metric</span><span class="p">(</span><span class="n">dal</span><span class="p">:</span> <span class="n">DataAccessLayer</span><span class="p">,</span> <span class="n">repo_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">yearmo</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">okra_api_pb2</span><span class="o">.</span><span class="n">RepositoryHistoryMetric</span><span class="p">()</span>
+
+    <span class="n">msg</span><span class="o">.</span><span class="n">repo_id</span> <span class="o">=</span> <span class="n">repo_id</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">current_yearmo</span> <span class="o">=</span> <span class="n">yearmo</span>
+
+    <span class="c1"># IsoDataAggregation</span>
+        
+    <span class="n">qres1</span> <span class="o">=</span> <span class="n">iso_date_aggregation</span><span class="p">(</span><span class="n">dal</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">qres1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="n">first</span> <span class="o">=</span> <span class="n">qres1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">qres1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">msg_iso_date_aggregation</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;first&#39;</span><span class="p">,</span>
+                                   <span class="n">yearmo</span><span class="o">=</span><span class="n">first</span><span class="o">.</span><span class="n">yearmo</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">msg_iso_date_aggregation</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">last</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;last&#39;</span><span class="p">,</span>
+                                   <span class="n">yearmo</span><span class="o">=</span><span class="n">last</span><span class="o">.</span><span class="n">yearmo</span><span class="p">)</span>
+
+    <span class="c1"># Find start yearmo</span>
+
+    <span class="n">msg</span><span class="o">.</span><span class="n">start_yearmo</span> <span class="o">=</span> <span class="n">first</span><span class="o">.</span><span class="n">yearmo</span>
+
+    <span class="c1"># Find last commit info</span>
+
+    <span class="n">msg</span><span class="o">.</span><span class="n">last_commit_yearmo</span> <span class="o">=</span> <span class="n">last</span><span class="o">.</span><span class="n">yearmo</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">last_commit_hash</span> <span class="o">=</span> <span class="n">last</span><span class="o">.</span><span class="n">commit_hash</span>
+
+    <span class="c1"># Total lines added/subtracted</span>
+
+    <span class="n">fimet</span> <span class="o">=</span> <span class="n">find_file_metrics</span><span class="p">(</span><span class="n">dal</span><span class="p">)</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">total_lines_added</span> <span class="o">=</span> <span class="n">fimet</span><span class="o">.</span><span class="n">lines_added</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">total_lines_subtracted</span> <span class="o">=</span> <span class="n">fimet</span><span class="o">.</span><span class="n">lines_subtracted</span>
+
+    <span class="c1"># Total truck factor</span>
+
+    <span class="n">member_count</span><span class="p">,</span> <span class="n">members</span> <span class="o">=</span> <span class="n">get_bus_factor</span><span class="p">(</span><span class="n">dal</span><span class="p">)</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">total_truck_factor</span> <span class="o">=</span> <span class="n">member_count</span>
+
+    <span class="c1"># Total days in project</span>
+
+    <span class="n">time_elapsed</span> <span class="o">=</span> <span class="n">last</span><span class="o">.</span><span class="n">contributed</span> <span class="o">-</span> <span class="n">first</span><span class="o">.</span><span class="n">contributed</span>
+    <span class="n">msg</span><span class="o">.</span><span class="n">total_days</span> <span class="o">=</span> <span class="n">time_elapsed</span><span class="o">.</span><span class="n">days</span>
+
+    <span class="k">return</span> <span class="n">msg</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Tyler Brown
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

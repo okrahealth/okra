@@ -184,6 +184,26 @@
     <span class="n">group_by</span><span class="p">(</span><span class="n">CommitFile</span><span class="o">.</span><span class="n">modified_file</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">q</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="total_number_of_contributors_by_project"><a class="viewcode-back" href="../../apps.html#okra.assn4.total_number_of_contributors_by_project">[docs]</a><span class="k">def</span> <span class="nf">total_number_of_contributors_by_project</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">dal</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Compute the total number of contributors by project.</span>
+
+<span class="sd">    :param owner: name of owner</span>
+<span class="sd">    :param project: name of project</span>
+<span class="sd">    :param dal: okra.models.DataAccessLayer</span>
+<span class="sd">    :return: the total number of contributors in a project</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">dal</span><span class="o">.</span><span class="n">session</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+        <span class="n">Meta</span><span class="o">.</span><span class="n">owner_name</span><span class="p">,</span> <span class="n">Meta</span><span class="o">.</span><span class="n">project_name</span><span class="p">,</span> <span class="n">Author</span><span class="o">.</span><span class="n">email</span>
+    <span class="p">)</span><span class="o">.</span>\
+    <span class="nb">filter</span><span class="p">(</span>
+        <span class="n">Meta</span><span class="o">.</span><span class="n">owner_name</span> <span class="o">==</span> <span class="n">owner</span><span class="p">,</span> <span class="n">Meta</span><span class="o">.</span><span class="n">project_name</span> <span class="o">==</span> <span class="n">project</span>
+    <span class="p">)</span><span class="o">.</span>\
+    <span class="n">join</span><span class="p">(</span><span class="n">Author</span><span class="p">)</span><span class="o">.</span>\
+    <span class="n">group_by</span><span class="p">(</span><span class="n">Author</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="author_file_owned"><a class="viewcode-back" href="../../apps.html#okra.assn4.author_file_owned">[docs]</a><span class="k">def</span> <span class="nf">author_file_owned</span><span class="p">(</span><span class="n">owner</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">dal</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Compute file ownership by each author. </span>
 

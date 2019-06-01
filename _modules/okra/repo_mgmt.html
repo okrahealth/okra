@@ -190,7 +190,8 @@
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ppath</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;mkdir&quot;</span><span class="p">,</span> <span class="n">ppath</span><span class="p">],</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;mkdir&quot;</span><span class="p">,</span> <span class="n">ppath</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                         <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">ppath</span><span class="p">):</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -226,7 +227,8 @@
             
         <span class="n">rpath</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">)</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;clone&quot;</span><span class="p">,</span> <span class="n">repo_path</span><span class="p">,</span> <span class="n">rpath</span><span class="p">],</span>
-                             <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                             <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+        
 
         <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">rpath</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">True</span>
@@ -243,7 +245,8 @@
     <span class="sd">&quot;&quot;&quot; Update repo with new code. &quot;&quot;&quot;</span>
     <span class="n">c1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;git&quot;</span><span class="p">,</span> <span class="s2">&quot;fetch&quot;</span><span class="p">]</span>
     <span class="n">rpath</span> <span class="o">=</span> <span class="n">urljoin</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">)</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">rpath</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">rpath</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                        <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -261,7 +264,8 @@
 <span class="sd">    :rtype: True if git repo successfully compressed</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">c1</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;tar&quot;</span><span class="p">,</span> <span class="s2">&quot;-zcf&quot;</span><span class="p">,</span> <span class="n">repo_comp</span><span class="p">,</span> <span class="n">repo_name</span><span class="p">]</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="n">cwd</span><span class="o">=</span><span class="n">cache</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+                         <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
@@ -284,7 +288,7 @@
 <span class="sd">    :raises: :class:`okra.error_handling.DirectoryNotCreatedError`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">c2</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;tar&quot;</span><span class="p">,</span> <span class="s2">&quot;-zxf&quot;</span><span class="p">,</span> <span class="n">repo_comp</span><span class="p">,</span> <span class="s2">&quot;-C&quot;</span><span class="p">,</span> <span class="n">cache</span><span class="p">]</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">c2</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
