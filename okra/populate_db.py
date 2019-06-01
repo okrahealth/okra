@@ -13,7 +13,7 @@ from okra.gitlogs import parse_inventory
 logger = logging.getLogger(__name__)
 
 
-def insert_buffer(items: iter, dal, buffer_size=1024):
+def insert_buffer(items, dal, buffer_size=1024):
     """ Insert items using a buffer. 
 
     :param items: sqlalchemy orm database objects

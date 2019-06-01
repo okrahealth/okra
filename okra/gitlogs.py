@@ -243,7 +243,7 @@ def extract_data_main(fpath: str, dirpath: str):
                 {"parse"     : parse_messages,
                  "line"      : write_line_messages,
                  "file_name" : messages},
-                {"parse"     : parse_files,
+                {"parse"     : parse_committed_files,
                  "line"      : write_line_files,
                  "file_name" : files}]
 

@@ -86,7 +86,7 @@ def clone_repo(repo_name: str, dirpath: str, ssh=False) -> bool:
         )
 
     except Exception as exc:
-        logger.error("Issue with git clone: {}".format(res.stderr))
+        logger.error("Issue with git clone: {}".format(repo_name))
         raise exc
 
 def update_repo(repo_name: str, dirpath: str) -> bool:

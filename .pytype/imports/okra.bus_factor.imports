@@ -1,9 +1,5 @@
-pandas/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 sqlalchemy/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 sqlalchemy/ext/declarative/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 sqlalchemy/orm/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
 okra/models /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi
 okra/assn4 /Users/tylerbrown/projects/okra/.pytype/pyi/okra/assn4.pyi
-okra/bus_factor /Users/tylerbrown/projects/okra/.pytype/pyi/okra/bus_factor.pyi
-okra/proto/okra_api_pb2 /Users/tylerbrown/projects/okra/.pytype/pyi/okra/proto/okra_api_pb2.pyi
-okra/repository_metrics /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repository_metrics.pyi

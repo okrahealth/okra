@@ -29,7 +29,7 @@ class CommitFile(Any):
     commit_hash: Any
     file_id: Any
     lines_added: Any
-    lines_deleted: Any
+    lines_subtracted: Any
     modified_file: Any
 
 class Contrib(Any):
