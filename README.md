@@ -110,4 +110,3 @@ Please contact a core developer before making any changes to the
 This statistical library is currently being used to compute batch jobs to populate
 the database in [github.com/okrahealth/okra-api](https://github.com/okrahealth/okra-api).
 We are not supporting other use cases at this time.
-
