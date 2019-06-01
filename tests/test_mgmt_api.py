@@ -74,8 +74,7 @@ class TestMgmtApi(unittest.TestCase):
 
         # Truck factor
 
-        
-
+        assert out.truck_factor == 1
 
     def test_total_number_of_contributors_by_project(self):
         result = total_number_of_contributors_by_project("Tyler",

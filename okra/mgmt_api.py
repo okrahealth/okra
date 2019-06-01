@@ -17,6 +17,7 @@ from sqlalchemy import func
 from okra.assn4 import (get_truck_factor_by_project,
                         total_number_of_files_by_project,
                         total_number_of_contributors_by_project)
+from okra.bus_factor import get_bus_factor
 from okra.models import DataAccessLayer, Author, Meta, Contrib, CommitFile
 from okra.proto import okra_api_pb2
 from okra.repository_metrics import (repo_info, iso_date_aggregation,
@@ -106,10 +107,14 @@ def msg_repository_metric(dal: DataAccessLayer, repo_id: str, yearmo: str):
 
     # File level metrics
 
-
     qres4 = find_file_metrics(dal, yearmo)
     msg.file_count = qres4.file_count
     msg.lines_added = qres4.lines_added
     msg.lines_subtracted = qres4.lines_subtracted
+
+    # Truck factor
+
+    member_count, members = get_bus_factor(dal, yearmo)
+    msg.truck_factor = member_count
 
     return msg
