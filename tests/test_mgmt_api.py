@@ -3,7 +3,8 @@ import unittest
 
 from okra.models import DataAccessLayer
 from okra.assn4 import total_number_of_contributors_by_project
-from okra.mgmt_api import msg_repository_info, msg_repository_metric
+from okra.mgmt_api import (msg_repository_info, msg_repository_metric,
+                           msg_repo_history_metric)
 
 from .mock_db import mock_github_project_db
 
@@ -76,8 +77,8 @@ class TestMgmtApi(unittest.TestCase):
 
         assert out.truck_factor == 1
 
-    def test_total_number_of_contributors_by_project(self):
-        result = total_number_of_contributors_by_project("Tyler",
-                                                         "okra", self.dal)
-        assert result == 4
+    def test_repository_history_metric(self):
+        out = msg_repo_history_metric(self.dal, self.repo_id, self.yearmo)
 
+        assert out.repo_id == self.repo_id
+        assert out.current_yearmo == self.yearmo

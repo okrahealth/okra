@@ -118,3 +118,12 @@ def msg_repository_metric(dal: DataAccessLayer, repo_id: str, yearmo: str):
     msg.truck_factor = member_count
 
     return msg
+
+def msg_repo_history_metric(dal: DataAccessLayer, repo_id: str, yearmo: str):
+
+    msg = okra_api_pb2.RepositoryHistoryMetric()
+
+    msg.repo_id = repo_id
+    msg.current_yearmo = yearmo
+
+    return msg
