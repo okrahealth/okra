@@ -7,8 +7,16 @@
 ## Diagnose git health. 
 
 How healthy is our software? Okra is a tool that diagnoses the health of
-projects which use git version control. Okra uses the 'bus factor' to
-understand project health.
+projects which use git version control. Okra uses analytics, not buzzwords,
+create a Jupyter notebook report on the health of a specific project.
+
+The pre-alpha version of Okra is a command line tool:
+
+```
+$ okra compute -y https://github.com/okrahealth/okra.git 
+```
+
+This command will write a Jupyter notebook to your working directory.
 
 ### What is the bus factor?
 
