@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='okra',
-    version='1.3.1',
+    version='1.3.2',
     packages=["okra", "okra/proto"],
     license='MIT',
     author="Tyler Brown",
