@@ -8,7 +8,7 @@ from okra.models import DataAccessLayer, Meta, Author, Contrib, CommitFile
 logger = logging.getLogger(__name__)
 
 def repo_info(dal: DataAccessLayer, yearmo=''):
-    if len(yearmo) > 0:        
+    if len(yearmo) > 0:
         q = dal.session.query(
             Meta.yearmo, Contrib.commit_hash, Contrib.contributed
         ).join(Contrib).filter(Meta.yearmo == yearmo)
@@ -17,6 +17,10 @@ def repo_info(dal: DataAccessLayer, yearmo=''):
     q = dal.session.query(Contrib.commit_hash, Contrib.contributed).\
         join(Contrib)
     return q.all()
+
+def owner_info(dal: DataAccessLayer):
+    q = dal.session.query(Meta.owner_name, Meta.project_name, Meta.commit_hash)
+    return q.order_by(Meta.yearmo.desc()).first()
 
 def iso_date_aggregation(dal: DataAccessLayer, yearmo=''):
     if len(yearmo) > 0:

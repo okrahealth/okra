@@ -2,7 +2,6 @@
 
 import argparse
 import logging
-import nbformat as nbf
 import os
 
 from okra.logging_utils import enable_cloud_log
@@ -57,7 +56,4 @@ args = parser.parse_args()
 enable_cloud_log(level='INFO')
 
 if args.commands == 'compute':
-    nb = nbf.v4.new_notebook()
-    nb_name = 'owner_name_hash.ipynb'
-    print("path: " + os.path.join(args.dir, nb_name))
-    #nbf.write(nb, os.path.joins(args.dir, nb_name))
+    print("computing...")
