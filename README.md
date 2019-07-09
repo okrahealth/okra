@@ -30,27 +30,6 @@ We use [GNU make](https://www.gnu.org/software/make/manual/make.html#Introductio
 organize our build. It allows us to break our our package and development dependencies.
 It also allows us to automate common tasks like running tests or building documentation.
 
-### Step 0: Cloning the repo
-
-Okra uses a submodule, [tbonza/tiny_dancer](https://github.com/tbonza/tiny_dancer), for 
-testing purposes. Make sure you initialize the submodule after cloning Okra so that your
-tests will be passing.
-
-```
-$ git clone https://github.com/okrahealth/okra.git
-$ # Submodule required for testing https://git-scm.com/book/en/v2/Git-Tools-Submodules
-$ git submodule init
-$ git submodule update
-```
-
-Validate the clone and master branch by ensuring that tests are passing.
-
-```
-$ make test
-```
-
-Please [open an Okra issue](https://github.com/okrahealth/okra/issues) if your tests aren't
-passing.
 
 ### Step 1: Install and Configure a virtual environment
 
@@ -73,8 +52,27 @@ repository and install the required development dependencies:
 ```
 $ git clone https://github.com/okrahealth/okra.git
 $ cd okra
-$ make dev
 ```
+
+Okra uses a submodule, [tbonza/tiny_dancer](https://github.com/tbonza/tiny_dancer), for 
+testing purposes. Make sure you initialize the submodule after cloning Okra so that your
+tests will be passing.
+
+```
+$ # Submodule required for testing https://git-scm.com/book/en/v2/Git-Tools-Submodules
+$ git submodule init
+$ git submodule update
+```
+
+Validate the clone and master branch by ensuring that tests are passing.
+
+```
+$ make test
+```
+
+Please [open an Okra issue](https://github.com/okrahealth/okra/issues) if your tests aren't
+passing.
+
 
 ### Step 3: Validate your development environment by getting tests passing
 
