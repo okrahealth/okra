@@ -17,7 +17,7 @@ def mock_meta(session):
         Meta(commit_hash="5", owner_name="Tyler", project_name="okra",
              yearmo='2017-06'),
     ]
-    
+
     session.bulk_save_objects(meta_commits)
     session.commit()
     return session
@@ -67,10 +67,10 @@ def mock_contrib(session):
     return session
 
 def mock_commit_file(session):
-    
+
     commit_files = [
         # commit hash '1'
-        
+
         CommitFile(file_id=1, commit_hash="1", modified_file="a1.R",
                    lines_added=20, lines_subtracted=0),
         CommitFile(file_id=2, commit_hash="1", modified_file="b1.R",
@@ -100,7 +100,7 @@ def mock_commit_file(session):
                    lines_added=20, lines_subtracted=0),
 
         # commit hash '5'
-        
+
         CommitFile(file_id=10, commit_hash="5", modified_file="h1.R",
                    lines_added=20, lines_subtracted=0),
         CommitFile(file_id=11, commit_hash="5", modified_file="i1.R",
@@ -114,7 +114,7 @@ def mock_commit_file(session):
     return session
 
 def mock_commit_info(session):
-    
+
     commit_info = [
         Info(commit_hash="1", created=datetime(2015, 1, 1, 12, 30, 59, 0)),
         Info(commit_hash="2", created=datetime(2015, 6, 1, 12, 30, 59, 0)),
@@ -135,5 +135,3 @@ def mock_github_project_db(session):
     session = mock_commit_file(session)
     session = mock_commit_info(session)
     return session
-
-

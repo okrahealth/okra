@@ -1,7 +1,7 @@
 base:
 	python setup.py install
 dev: base
-	pip install sphinx sphinx-rtd-theme pytest pytype
+	pip install sphinx sphinx-rtd-theme pytest pytype nbformat
 test: dev
 	py.test tests
 docs: dev
