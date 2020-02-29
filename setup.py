@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='okra',
-    version='2.0.0',
+    version='2.0.1',
     packages=["okra", "okra/proto"],
     license='MIT',
     author="Tyler Brown",
@@ -32,7 +32,6 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
     entry_points={
