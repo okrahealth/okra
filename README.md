@@ -17,7 +17,8 @@ $ okra --help
 $ okra upsert JuliaLang IJulia.jl "sqlite:///ijulia.db" "JuliaLang/IJulia.jl" "https://github.com/JuliaLang/IJulia.jl.git" 
 ```
 
-This command will write a Jupyter notebook to your working directory.
+This command will clone/fetch updates from a repo and persist log information within a sqlite database. In this example,
+we're cloning `IJulia.jl`, and populating a sqlite database `ijulia.db`.
 
 ## Documentation
 
