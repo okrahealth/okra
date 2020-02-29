@@ -25,4 +25,7 @@ build
 dist/
 .Python
 *.swp
+<<<<<<< HEAD
 *.ipynb
+=======
+>>>>>>> a5798df8b3f1221010133346c23cbd84b887e934

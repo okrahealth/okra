@@ -11,7 +11,6 @@ enable_cloud_log(level='INFO')
 
 logger = logging.getLogger(__name__)
 
-
 parse_args(sys.argv)
 
 
