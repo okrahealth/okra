@@ -14,17 +14,15 @@ from okra.proto.assn1_pb2 import Commit, Message, File, Inventory
 
 logger = logging.getLogger(__name__)
 
-def parse_inventory(rpath: str, repo_name: str):
+def parse_inventory(repopath:str, owner:str, project:str):
     """ Return inventory information for a git repo.
 
     :param rpath: repository path
     :return: inventory message object
     :rtype: okra.protobuf.assn1_pb2.Inventory
     """
-    owner, project = repo_name.split("/")
-
     c = ["git", "log", "-1", "--pretty=%H"]
-    res = subprocess.run(c, cwd=rpath, stdout=subprocess.PIPE,
+    res = subprocess.run(c, cwd=repopath, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
 
     if res.returncode == 0:
@@ -40,7 +38,6 @@ def parse_inventory(rpath: str, repo_name: str):
     else:
         logger.error("FAIL - {}, {}, inventory not extracted".\
                      format(repo_name, rpath))
-    
 
 
 def parse_commits(rpath: str, chash=""):

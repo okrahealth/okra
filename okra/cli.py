@@ -11,6 +11,6 @@ def cli():
 @click.argument('dirpath')
 @click.argument('repo_name')
 @click.argument('dburl')
-@click.option('buffer_size', default=1e5, help="number of commits before db write")
+@click.option('--buffer_size', default=1e5, help="number of commits before db write")
 def clone_pull_repo(dirpath, repo_name, dburl, buffer_size):
     populate_db(dburl, dirpath, repo_name, buffer_size)

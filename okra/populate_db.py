@@ -52,6 +52,63 @@ def insert_buffer(items, dal, buffer_size=1024):
 
     logger.info("COMPLETED insert buffer")
 
+def persist_repo(owner:str, project:str, dburl:str, repopath:str, buffer_size:int):
+
+    dal = DataAccessLayer(dburl)
+    dal.connect()
+    dal.session = dal.Session()
+
+    last_commit = ""
+
+    invobj = dal.session.query(
+        Inventory.project_name, Inventory.owner_name,
+        Inventory.last_commit).\
+        filter(Inventory.project_name == project,
+               Inventory.owner_name == owner).first() # unique value
+
+    if invobj is not None:
+        last_commit = invobj.last_commit
+
+    # insert relevant commits into database
+
+    objs = repo_to_objects(owner, project, repopath, last_commit)
+    insert_buffer(objs, dal, buffer_size)
+
+    # update inventory
+
+    invmsg = parse_inventory(repopath, owner, project)
+
+    if len(last_commit) > 0:
+
+        # Retrieve new object b/c old object is no longer in session
+            
+        inv = dal.session.query(
+            Inventory.project_name, Inventory.owner_name,
+            Inventory.last_commit).\
+            filter(Inventory.project_name == project,
+                   Inventory.owner_name == owner).first() # unique value
+
+        # Do not try updating database if object hasn't changed
+            
+        if inv.last_commit != invmsg.last_hash:
+            inv.last_commit = invmsg.last_hash
+            dal.session.add(inv)
+            dal.session.commit()
+    
+    else:
+
+        # Add new inventory object
+            
+        inv = Inventory(
+            owner_name = invmsg.owner,
+            project_name = invmsg.project,
+            last_commit = invmsg.last_hash)
+
+        dal.session.add(inv)
+        dal.session.commit()
+
+    dal.session.close()
+
 def populate_db(dburl: str, cache: str, repo_name: str, buffer_size=1024):
     """ Populate a new or existing database. """
 

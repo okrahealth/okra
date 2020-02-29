@@ -9,8 +9,6 @@ import os
 import re
 from urllib.parse import urljoin
 
-from rfc3339 import parse_datetime
-
 from okra.error_handling import DirectoryNotCreatedError
 from okra.models import Meta, Author, Contrib, CommitFile, Info, Inventory
 from okra.gitlogs import (parse_commits, parse_messages,
@@ -29,7 +27,7 @@ def make_digit(numstr, desc):
             logger.error("ValueError for {}: {}".format(desc, numstr))
         return d
 
-def repo_to_objects(repo_name: str, cache: str, last_commit=""):
+def repo_to_objects(owner:str, project:str, repopath:str, last_commit=""):
     """ Retrieve objects from last commit if exists
 
     This function is a generator so we can specify a buffer size
@@ -42,8 +40,6 @@ def repo_to_objects(repo_name: str, cache: str, last_commit=""):
     :return: generator of populated model database objects
     :rtype: sqlalchemy database objects
     """
-    repopath = urljoin(cache, repo_name)
-
     if len(last_commit) == 0:
         
         cmts = parse_commits(repopath)
@@ -68,21 +64,20 @@ def repo_to_objects(repo_name: str, cache: str, last_commit=""):
             commit_hash=msg.hash_val,
             subject=msg.subject,
             message=msg.message_body,
-            created=parse_datetime(msg.timestamp)
+            created=datetime.fromisoformat(msg.timestamp)
         )
 
-        o,p = repo_name.split('/')
         meta_item = Meta(
             commit_hash=msg.hash_val,
-            owner_name=o,
-            project_name=p
+            owner_name=owner,
+            project_name=project
         )
         
         author_item = Author(
             commit_hash=cmt.hash_val,
             name=cmt.author,
             email=cmt.author_email,
-            authored=parse_datetime(cmt.author_timestamp)
+            authored=datetime.fromisoformat(cmt.author_timestamp)
         )
 
         contrib_item = Contrib(
@@ -90,7 +85,7 @@ def repo_to_objects(repo_name: str, cache: str, last_commit=""):
             commit_hash=cmt.hash_val,
             name=cmt.committer,
             email=cmt.committer_email,
-            contributed=parse_datetime(cmt.committer_timestamp)
+            contributed=datetime.fromisoformat(cmt.committer_timestamp)
         )        
         yield msg_item
         yield meta_item
@@ -109,7 +104,7 @@ def repo_to_objects(repo_name: str, cache: str, last_commit=""):
                     commit_hash=msg.hash_val,
                     name=item[0].strip(),
                     email=item[1].strip(),
-                    contributed=parse_datetime(msg.timestamp)
+                    contributed=datetime.fromisoformat(msg.timestamp)
                 )
                 yield contrib_item
                 contrib_id += 1
@@ -127,11 +122,3 @@ def repo_to_objects(repo_name: str, cache: str, last_commit=""):
         yield cf_item
 
         file_id += 1
-
-
-
-
-
-    
-
-
