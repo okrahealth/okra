@@ -21,9 +21,9 @@ def update_repo(repopath):
         return True
     return False
 
-def clone_repo(repo_path, repo_url):
+def clone_repo(repo_url, repo_path):
     try:
-        res = subprocess.run(["git", "clone", repo_path, rpath],
+        res = subprocess.run(["git", "clone", repo_url, repo_path],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if res.returncode == 0 and os.path.exists(repo_path):
             return True
@@ -37,7 +37,7 @@ def clone_repo(repo_path, repo_url):
 def clone_or_fetch_repo(repo_path, repo_url):
     if os.path.exists(repo_path):
         return update_repo(repo_path)
-    return clone_repo(repo_path, repo_url)
+    return clone_repo(repo_url, repo_path)
 
 def compress_repo(repo_name: str, cache: str, repo_comp: str) -> bool:
     """ Compress repo for upload.

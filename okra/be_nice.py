@@ -11,12 +11,7 @@ import os
 import time
 from urllib.parse import urljoin
 
-from okra.repo_mgmt import create_parent_dir, gcloud_clone_or_fetch_repo
 from okra.populate_db import persist_repo
-from okra.playbooks import local_persistance
-from okra.error_handling import (MissingEnvironmentVariableError,
-                                 NetworkError,
-                                 DirectoryNotCreatedError)
 
 
 # TODO be nice
