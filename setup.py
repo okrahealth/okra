@@ -2,11 +2,11 @@ from setuptools import setup, find_packages
 
 setup(
     name='okra',
-    version='2.0.2',
+    version='2.0.4',
     packages=["okra", "okra/proto"],
     license='MIT',
     author="Tyler Brown",
-    author_email="brown.tyler@husky.neu.edu",
+    author_email="tylers.pile@gmail.com",
     long_description_content_type="text/markdown",
     long_description=open('README.md').read(),
     python_requires=">=3.7",
