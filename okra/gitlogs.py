@@ -9,7 +9,6 @@ import logging
 import os
 import subprocess
 
-from okra.repo_mgmt import read_repos
 from okra.proto.assn1_pb2 import Commit, Message, File, Inventory
 
 logger = logging.getLogger(__name__)
@@ -209,72 +208,4 @@ def parse_committed_files(rpath: str, chash=''):
                 finfo.file_path = props[2]
 
                 yield finfo
-
-def write_line_files(parsed_files):
-    """ Generate a line for each git filepath message. """
-
-    for file_item in parsed_files:
-
-        row = [
-            file_item.hash_val,
-            file_item.file_path,
-        ]
-
-        yield row
-
-def extract_data_main(fpath: str, dirpath: str):
-    """ Extract data as requested in Assignment 1. """
-    logger.info("STARTED data extraction")
-    
-    commits = "commits.csv"
-    messages = "messages.csv"
-    files = "files.csv"
-    
-    outfiles = [{"parse"     : parse_commits,
-                 "line"      : write_line_commits,
-                 "file_name" : commits},
-                {"parse"     : parse_messages,
-                 "line"      : write_line_messages,
-                 "file_name" : messages},
-                {"parse"     : parse_committed_files,
-                 "line"      : write_line_files,
-                 "file_name" : files}]
-
-    repos = read_repos(fpath)
-    logger.info("Extracting data for {} git repos".format(len(repos)))
-
-    outs = {
-        commits : open(dirpath + commits, "w"),
-        messages: open(dirpath + messages, "w"),
-        files: open(dirpath + files, "w"),
-    }
-
-    repo_count = 0
-    for repo_name in repos:
-
-        rpath = dirpath + repo_name
-
-        logger.info("Extracting data in repo '{}'".format(rpath))
-
-        for out_item in outfiles:
-
-            lines = out_item["line"](out_item["parse"](rpath))
-
-            logger.info("Adding to file '{}'".format(out_item["file_name"]))
-
-            writer = csv.writer(outs[out_item["file_name"]],
-                                delimiter=",",
-                                quotechar='"',
-                                quoting=csv.QUOTE_MINIMAL)
-
-            for line in lines:
-
-                writer.writerow(line)
-
-    for key in outs.keys():
-
-        outs[key].close()
-
-    logger.info("Closed files")
-    logger.info("FINISHED data extraction")
 

@@ -13,94 +13,31 @@ from okra.error_handling import DirectoryNotCreatedError, NetworkError
 
 logger = logging.getLogger(__name__)
 
-
-def read_repos(fpath: str) -> list:
-    """ Read list of repos from disk """
-    try:
-        with open(fpath, "r") as infile:
-            data = infile.readlines()
-
-        data = [i.strip() for i in data]
-        return data
-
-    except FileNotFoundError:
-        logger.error("File not found: {}".format(fpath))
-        return []
-
-def create_parent_dir(repo_name: str, dirpath: str) -> bool:
-    """ Create parent directory before cloning repo.
-
-    https://github.com/tbonza/EDS19/issues/8
-    """
-    parent_dir = repo_name.split("/")[0]
-    ppath = urljoin(dirpath,parent_dir)
-    
-    if os.path.exists(ppath):
-        return True
-
-    res = subprocess.run(["mkdir", ppath], stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE)
-
-    if res.returncode == 0 and os.path.exists(ppath):
-        return True
-    else:
-        logger.error(res.stderr)
-        return False
-
-def gcloud_clone_or_fetch_repo(repo_name: str, ssh=False) -> bool:
-    """ Clone or fetch updates from git repo
-
-    GCloud operations only work on one repository at a time
-    so we don't have to use a parent directory.
-
-    :param repo_name: '<repo owner>/<repo name>'
-    :param repo_path: local path to the git repo
-    :return: current git repo
-    :rtype: None, file written to disk
-    """
-    cache = os.getenv("CACHE")
-    repo_path = urljoin(cache, repo_name)
-    
-    if os.path.exists(repo_path):
-        return update_repo(repo_name, cache)
-    return clone_repo(repo_name, cache, ssh)
-
-def clone_repo(repo_name: str, dirpath: str, ssh=False) -> bool:
-    """ Clone GitHub repo. """
-    try:
-        if ssh:
-            repo_path = "git@github.com:{}.git".format(repo_name)
-        else:
-            repo_path = "https://github.com/{}.git".format(repo_name)
-            
-        rpath = urljoin(dirpath, repo_name)
-        res = subprocess.run(["git", "clone", repo_path, rpath],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        
-
-        if res.returncode == 0 and os.path.exists(rpath):
-            return True
-        raise NetworkError(
-            expression = res.stderr,
-            message = "Issue with git clone"
-        )
-
-    except Exception as exc:
-        logger.error("Issue with git clone: {}".format(repo_name))
-        raise exc
-
-def update_repo(repo_name: str, dirpath: str) -> bool:
-    """ Update repo with new code. """
+def update_repo(repopath):
     c1 = ["git", "fetch"]
-    rpath = urljoin(dirpath, repo_name)
-    res = subprocess.run(c1, cwd=rpath, stdout=subprocess.PIPE,
+    res = subprocess.run(c1, cwd=repopath, stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE)
-
     if res.returncode == 0:
         return True
-    else:
-        logger.error(res.stderr)
-        return False
+    return False
+
+def clone_repo(repo_path, repo_url):
+    try:
+        res = subprocess.run(["git", "clone", repo_path, rpath],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if res.returncode == 0 and os.path.exists(repo_path):
+            return True
+        raise NetworkError(
+                expression=res.stderr,
+                message = "Issue with git clone"
+        )
+    except Exception as exc:
+        raise exc
+
+def clone_or_fetch_repo(repo_path, repo_url):
+    if os.path.exists(repo_path):
+        return update_repo(repo_path)
+    return clone_repo(repo_path, repo_url)
 
 def compress_repo(repo_name: str, cache: str, repo_comp: str) -> bool:
     """ Compress repo for upload.
