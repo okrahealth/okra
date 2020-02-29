@@ -14,7 +14,7 @@ def cli():
 @click.argument('dburl')
 @click.argument('repopath')
 @click.argument('repourl')
-@click.option('--buffer_size', default=1e4, help="number of commits before db write")
+@click.option('--buffer_size', default=int(1e4), help="number of commits before db write")
 def upsert_repo(owner, project, dburl, repopath, repourl, buffer_size):
-    clone_or_fetch_repo(repourl, repopath)
+    clone_or_fetch_repo(repopath, repourl)
     persist_repo(owner, project, dburl, repopath, buffer_size)

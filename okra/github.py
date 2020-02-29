@@ -60,6 +60,9 @@ def repo_to_objects(owner:str, project:str, repopath:str, last_commit=""):
     for msg, cmt in zip(msgs, cmts):
         contrib_id = 0
 
+        commit_authored_datetime = datetime.fromisoformat(cmt.committer_timestamp)
+        yrmo_cad = str(commit_authored_datetime.year) + "-" + str(commit_authored_datetime.month)
+
         msg_item = Info(
             commit_hash=msg.hash_val,
             subject=msg.subject,
@@ -70,14 +73,15 @@ def repo_to_objects(owner:str, project:str, repopath:str, last_commit=""):
         meta_item = Meta(
             commit_hash=msg.hash_val,
             owner_name=owner,
-            project_name=project
+            project_name=project,
+            yearmo=yrmo_cad
         )
         
         author_item = Author(
             commit_hash=cmt.hash_val,
             name=cmt.author,
             email=cmt.author_email,
-            authored=datetime.fromisoformat(cmt.author_timestamp)
+            authored=commit_authored_datetime
         )
 
         contrib_item = Contrib(
