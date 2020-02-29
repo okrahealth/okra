@@ -17,16 +17,16 @@ from okra.playbooks import retrieve_or_clone
 
 class TestGithub(unittest.TestCase):
 
-    repo_name = "tbonza/tiny_dancer"
+    owner = "tbonza"
+    project = "tiny_dancer"
     data_loc = 'tests/data/'
+    repopath = data_loc + owner + "/" + project
     total_commits = 4
 
     def test_repo_to_objects_last_commit(self):
         last_commit = "ed4dd8e797db7d6c1ce23980c24d94228d66b1d6"
 
-        results = [i for i in repo_to_objects(self.repo_name,
-                                              self.data_loc,
-                                              last_commit=last_commit)]
+        results = [i for i in repo_to_objects(self.owner, self.project, self.repopath, last_commit)]
 
         assert len(results) == 6
 

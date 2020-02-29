@@ -11,9 +11,10 @@ from okra.playbooks import retrieve_or_clone
 
 class TestAssn1Data(unittest.TestCase):
 
-    repo_name = "tbonza/tiny_dancer"
+    owner = 'tbonza'
+    project = 'tiny_dancer'
     data_loc = 'tests/data/'
-    repo_path = urljoin(data_loc, repo_name)
+    repo_path = data_loc + owner + "/" + project
 
     total_commits = 4
 
@@ -98,7 +99,7 @@ class TestAssn1Data(unittest.TestCase):
 
     def test_parse_inventory(self):
 
-        r = parse_inventory(self.repo_path, self.repo_name)
+        r = parse_inventory(self.repo_path, self.owner, self.project)
 
         assert r.owner == 'tbonza'
         assert r.project == 'tiny_dancer'
