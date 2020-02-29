@@ -1,8 +1,6 @@
 # (generated with --quick)
 
 import collections
-import datetime
-import logging
 import multiprocessing.pool
 import okra.models
 from typing import Any, Callable, Iterable, List, Optional, Tuple, Type

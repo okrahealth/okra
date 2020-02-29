@@ -79,9 +79,11 @@ def parse_commits(rpath: str, chash=""):
                 
                 yield commit
 
+            elif len(items) == 1 and row_num == 0:
+                pass # blank line for row 0
             else:
-                logger.error("Issue with row {}, repo '{}'".\
-                             format(row_num, rpath))            
+                logger.error("Issue with row {}, repo '{}'".format(row_num, rpath))
+                logger.error(row)
     else:
         logger.error("FAIL -- unable to extract git commits info")
 
@@ -141,10 +143,12 @@ def parse_messages(rpath: str, chash=""):
                 message.timestamp = items[3].strip()
 
                 yield message
-                
+             
+            elif len(items) == 1 and row_num == 0:
+                pass # blank line for row 0   
             else:
-                logger.error("Issue with row {}, repo '{}'".\
-                             format(row_num, rpath))
+                logger.error("Issue with row {}, repo '{}'".format(row_num, rpath))
+                logger.error(row)
     else:
         logger.error("FAIL -- unable to extract messages_csv")
 
