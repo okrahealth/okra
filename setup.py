@@ -2,21 +2,20 @@ from setuptools import setup, find_packages
 
 setup(
     name='okra',
-    version='1.3.2',
+    version='2.0.0',
     packages=["okra", "okra/proto"],
     license='MIT',
     author="Tyler Brown",
     author_email="brown.tyler@husky.neu.edu",
     long_description_content_type="text/markdown",
     long_description=open('README.md').read(),
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     install_requires=[
-        'pandas>=0.24.2',
-        'protobuf>=3.6.1',
-        'sqlalchemy>=1.3.0',
-        'tonyg-rfc3339>=0.1',
+        'click == 7.0',
+        'pandas == 1.0.1',
+        'protobuf == 3.11.3',
+        'sqlalchemy == 1.3.13',
     ],
-    scripts=['bin/okra',],
     zip_safe=False,
     url='https://okrahealth.github.io/',
     project_urls={
@@ -35,5 +34,8 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-    ]
+    ],
+    entry_points={
+        'console_scripts': ['okra = okra.cli:cli'],
+    }
 )
