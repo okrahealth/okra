@@ -8,3 +8,4 @@ okra/proto/assn1_pb2 /Users/tylerbrown/projects/okra/.pytype/pyi/okra/proto/assn
 okra/gitlogs /Users/tylerbrown/projects/okra/.pytype/pyi/okra/gitlogs.pyi
 okra/github /Users/tylerbrown/projects/okra/.pytype/pyi/okra/github.pyi
 okra/populate_db /Users/tylerbrown/projects/okra/.pytype/pyi/okra/populate_db.pyi
+okra/be_nice /Users/tylerbrown/projects/okra/.pytype/pyi/okra/be_nice.pyi

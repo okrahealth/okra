@@ -4,18 +4,15 @@ rule infer
 rule check
   command = pytype-single --imports_info $imports --module-name $module -V 3.7 -o $out --analyze-annotated --nofail --quick $in
   description = check $module
-build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/exceptions.pyi: check /Users/tylerbrown/projects/okra/okra/exceptions.py
-  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.exceptions.imports
-  module = okra.exceptions
-build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/batch_utils.pyi: check /Users/tylerbrown/projects/okra/okra/batch_utils.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/exceptions.pyi
-  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.batch_utils.imports
-  module = okra.batch_utils
-build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/proto/__init__.pyi: check /Users/tylerbrown/projects/okra/okra/proto/__init__.py
-  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.proto.__init__.imports
-  module = okra.proto.__init__
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/__init__.pyi: check /Users/tylerbrown/projects/okra/okra/__init__.py
+  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.__init__.imports
+  module = okra.__init__
 build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/error_handling.pyi: check /Users/tylerbrown/projects/okra/okra/error_handling.py
   imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.error_handling.imports
   module = okra.error_handling
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repo_mgmt.pyi: check /Users/tylerbrown/projects/okra/okra/repo_mgmt.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/error_handling.pyi
+  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.repo_mgmt.imports
+  module = okra.repo_mgmt
 build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi: check /Users/tylerbrown/projects/okra/okra/models.py
   imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.models.imports
   module = okra.models
@@ -31,9 +28,24 @@ build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/github.pyi: check /Users/
 build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/populate_db.pyi: check /Users/tylerbrown/projects/okra/okra/populate_db.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi /Users/tylerbrown/projects/okra/.pytype/pyi/okra/github.pyi /Users/tylerbrown/projects/okra/.pytype/pyi/okra/gitlogs.pyi
   imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.populate_db.imports
   module = okra.populate_db
-build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/be_nice.pyi: check /Users/tylerbrown/projects/okra/okra/be_nice.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/populate_db.pyi
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/be_nice.pyi: check /Users/tylerbrown/projects/okra/okra/be_nice.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repo_mgmt.pyi /Users/tylerbrown/projects/okra/.pytype/pyi/okra/populate_db.pyi
   imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.be_nice.imports
   module = okra.be_nice
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/cli.pyi: check /Users/tylerbrown/projects/okra/okra/cli.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/be_nice.pyi /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repo_mgmt.pyi /Users/tylerbrown/projects/okra/.pytype/pyi/okra/populate_db.pyi
+  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.cli.imports
+  module = okra.cli
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/proto/__init__.pyi: check /Users/tylerbrown/projects/okra/okra/proto/__init__.py
+  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.proto.__init__.imports
+  module = okra.proto.__init__
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/assn2_db.pyi: check /Users/tylerbrown/projects/okra/okra/assn2_db.py
+  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.assn2_db.imports
+  module = okra.assn2_db
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/exceptions.pyi: check /Users/tylerbrown/projects/okra/okra/exceptions.py
+  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.exceptions.imports
+  module = okra.exceptions
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/batch_utils.pyi: check /Users/tylerbrown/projects/okra/okra/batch_utils.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/exceptions.pyi
+  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.batch_utils.imports
+  module = okra.batch_utils
 build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/assn4.pyi: check /Users/tylerbrown/projects/okra/okra/assn4.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi
   imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.assn4.imports
   module = okra.assn4
@@ -49,24 +61,12 @@ build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repository_metrics.pyi: c
 build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/mgmt_api.pyi: check /Users/tylerbrown/projects/okra/okra/mgmt_api.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/assn4.pyi /Users/tylerbrown/projects/okra/.pytype/pyi/okra/bus_factor.pyi /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi /Users/tylerbrown/projects/okra/.pytype/pyi/okra/proto/okra_api_pb2.pyi /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repository_metrics.pyi
   imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.mgmt_api.imports
   module = okra.mgmt_api
-build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/distributed.pyi: check /Users/tylerbrown/projects/okra/okra/distributed.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi
-  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.distributed.imports
-  module = okra.distributed
-build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/assn2_db.pyi: check /Users/tylerbrown/projects/okra/okra/assn2_db.py
-  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.assn2_db.imports
-  module = okra.assn2_db
 build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/logging_utils.pyi: check /Users/tylerbrown/projects/okra/okra/logging_utils.py
   imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.logging_utils.imports
   module = okra.logging_utils
-build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repo_mgmt.pyi: check /Users/tylerbrown/projects/okra/okra/repo_mgmt.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/error_handling.pyi
-  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.repo_mgmt.imports
-  module = okra.repo_mgmt
-build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/cli.pyi: check /Users/tylerbrown/projects/okra/okra/cli.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/repo_mgmt.pyi /Users/tylerbrown/projects/okra/.pytype/pyi/okra/populate_db.pyi
-  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.cli.imports
-  module = okra.cli
 build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/settings.pyi: check /Users/tylerbrown/projects/okra/okra/settings.py
   imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.settings.imports
   module = okra.settings
-build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/__init__.pyi: check /Users/tylerbrown/projects/okra/okra/__init__.py
-  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.__init__.imports
-  module = okra.__init__
+build /Users/tylerbrown/projects/okra/.pytype/pyi/okra/distributed.pyi: check /Users/tylerbrown/projects/okra/okra/distributed.py | /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi
+  imports = /Users/tylerbrown/projects/okra/.pytype/imports/okra.distributed.imports
+  module = okra.distributed

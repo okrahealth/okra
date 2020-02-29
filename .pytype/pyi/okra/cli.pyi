@@ -2,6 +2,7 @@
 
 import click.core
 
+batch_upsert_repos: click.core.Command
 cli: click.core.Group
 click: module
 upsert_repo: click.core.Command
