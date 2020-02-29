@@ -1,4 +1,4 @@
-sqlalchemy/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
-sqlalchemy/ext/declarative/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
-sqlalchemy/orm/__init__ /Users/tylerbrown/projects/okra/.pytype/imports/default.pyi
-okra/models /Users/tylerbrown/projects/okra/.pytype/pyi/okra/models.pyi
+sqlalchemy/__init__ /Users/tylerbrown/projects/okrahealth/okra/.pytype/imports/default.pyi
+sqlalchemy/ext/declarative/__init__ /Users/tylerbrown/projects/okrahealth/okra/.pytype/imports/default.pyi
+sqlalchemy/orm/__init__ /Users/tylerbrown/projects/okrahealth/okra/.pytype/imports/default.pyi
+okra/models /Users/tylerbrown/projects/okrahealth/okra/.pytype/pyi/okra/models.pyi

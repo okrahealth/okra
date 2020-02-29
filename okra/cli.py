@@ -1,9 +1,11 @@
 """ Command Line Interface utilities for Okra """
 import click
+import logging
 
 from okra.be_nice import batch_upsert_repos
 from okra.repo_mgmt import clone_or_fetch_repo
 from okra.populate_db import persist_repo
+from okra.logging_utils import enable_log
 
 @click.group()
 def cli():
@@ -31,8 +33,10 @@ def get_latest(repopath, repourl):
 @click.argument('project')
 @click.argument('dburl')
 @click.argument('repopath')
+@click.argument('logpath')
 @click.option('--buffer_size', default=int(1e4), help="number of commits before db write")
-def persist_cloned_repo(owner, project, dburl, repopath, buffer_size):
+def persist_cloned_repo(owner, project, dburl, repopath, logpath, buffer_size):
+    enable_log(logpath)
     persist_repo(owner, project, dburl, repopath, buffer_size)
 
 @cli.command(name='batch-upsert')
