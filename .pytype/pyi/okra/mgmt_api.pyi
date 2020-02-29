@@ -1,7 +1,5 @@
 # (generated with --quick)
 
-import datetime
-import logging
 import okra.models
 from typing import Any, List, Optional, Tuple, Type, TypeVar
 

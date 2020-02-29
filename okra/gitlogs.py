@@ -34,11 +34,7 @@ def parse_inventory(repopath:str, owner:str, project:str):
         inv.project = project
         inv.last_hash = hash_val
         return inv
-
-    else:
-        logger.error("FAIL - {}, {}, inventory not extracted".\
-                     format(repo_name, rpath))
-
+    return None
 
 def parse_commits(rpath: str, chash=""):
     """ Yields a protocol buffer of git commit information.
