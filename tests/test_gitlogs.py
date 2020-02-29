@@ -7,7 +7,6 @@ from urllib.parse import urljoin
 
 from okra.gitlogs import (parse_committed_files, parse_commits,
                           parse_messages, parse_inventory)
-from okra.playbooks import retrieve_or_clone
 
 class TestAssn1Data(unittest.TestCase):
 
