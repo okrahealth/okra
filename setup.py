@@ -9,10 +9,10 @@ setup(
     author_email="tylers.pile@gmail.com",
     long_description_content_type="text/markdown",
     long_description=open('README.md').read(),
-    python_requires=">=3.7",
+    python_requires="==3.7",
     install_requires=[
+        'cython',
         'click == 7.0',
-        'cython==0.29.24',
         'numpy==1.21',
         'pandas == 1.0.1',
         'protobuf == 3.11.3',
