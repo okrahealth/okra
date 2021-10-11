@@ -8,6 +8,7 @@ from urllib.parse import urljoin
 from okra.gitlogs import (parse_committed_files, parse_commits,
                           parse_messages, parse_inventory)
 
+@unittest.skip
 class TestAssn1Data(unittest.TestCase):
 
     owner = 'tbonza'

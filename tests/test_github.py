@@ -13,6 +13,7 @@ from urllib.parse import urljoin
 
 from okra.github import repo_to_objects
 
+@unittest.skip
 class TestGithub(unittest.TestCase):
 
     owner = "tbonza"

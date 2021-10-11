@@ -1,8 +1,0 @@
-sqlalchemy/ext/declarative/__init__ /Users/tylerbrown/projects/okrahealth/okra/.pytype/imports/default.pyi
-sqlalchemy/orm/__init__ /Users/tylerbrown/projects/okrahealth/okra/.pytype/imports/default.pyi
-sqlalchemy/__init__ /Users/tylerbrown/projects/okrahealth/okra/.pytype/imports/default.pyi
-okra/models /Users/tylerbrown/projects/okrahealth/okra/.pytype/pyi/okra/models.pyi
-okra/error_handling /Users/tylerbrown/projects/okrahealth/okra/.pytype/pyi/okra/error_handling.pyi
-okra/proto/assn1_pb2 /Users/tylerbrown/projects/okrahealth/okra/.pytype/pyi/okra/proto/assn1_pb2.pyi
-okra/gitlogs /Users/tylerbrown/projects/okrahealth/okra/.pytype/pyi/okra/gitlogs.pyi
-okra/github /Users/tylerbrown/projects/okrahealth/okra/.pytype/pyi/okra/github.pyi
