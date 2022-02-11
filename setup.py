@@ -2,20 +2,20 @@ from setuptools import setup, find_packages
 
 setup(
     name='okra',
-    version='2.1',
+    version='2.2',
     packages=["okra", "okra/proto"],
     license='MIT',
     author="Tyler Brown",
     author_email="tylers.pile@gmail.com",
     long_description_content_type="text/markdown",
     long_description=open('README.md').read(),
-    python_requires="==3.7",
+    python_requires="==3.7.*",
     install_requires=[
         'cython',
         'click == 7.0',
         'numpy==1.21',
         'pandas == 1.0.1',
-        'protobuf == 3.11.3',
+        'protobuf == 3.19',
         'sqlalchemy == 1.3.13',
     ],
     zip_safe=False,
