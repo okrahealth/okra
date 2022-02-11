@@ -15,7 +15,7 @@ setup(
         'click == 7.0',
         'numpy==1.21',
         'pandas == 1.0.1',
-        'protobuf == 3.11.3',
+        'protobuf == 3.15.0',
         'sqlalchemy == 1.3.13',
     ],
     zip_safe=False,
