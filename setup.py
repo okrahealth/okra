@@ -9,11 +9,11 @@ setup(
     author_email="tylers.pile@gmail.com",
     long_description_content_type="text/markdown",
     long_description=open('README.md').read(),
-    python_requires="==3.7.*",
+    python_requires=">=3.7",
     install_requires=[
         'cython',
         'click == 7.0',
-        'numpy==1.21',
+        'numpy==1.22',
         'pandas == 1.0.1',
         'protobuf == 3.19',
         'sqlalchemy == 1.3.13',
@@ -33,7 +33,6 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.7',
     ],
     entry_points={
         'console_scripts': ['okra = okra.cli:cli'],
