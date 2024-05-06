@@ -1,6 +1,6 @@
 # Okra
 
-[![image](https://travis-ci.org/okrahealth/okra.svg?branch=master)](https://travis-ci.com/)
+[![Python package](https://github.com/okrahealth/okra/actions/workflows/python-package.yml/badge.svg)](https://github.com/okrahealth/okra/actions/workflows/python-package.yml)
 [![image](https://img.shields.io/pypi/l/okra.svg)](https://pypi.org/project/okra/)
 [![image](https://img.shields.io/pypi/pyversions/okra.svg)](https://pypi.org/project/okra/)
 
