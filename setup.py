@@ -13,9 +13,9 @@ setup(
     install_requires=[
         'cython',
         'click == 7.0',
-        'numpy==1.22',
+        'numpy==1.26',
         'pandas == 1.0.1',
-        'protobuf == 3.19',
+        'protobuf > 5.26',
         'sqlalchemy == 1.3.13',
     ],
     zip_safe=False,
